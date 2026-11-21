@@ -299,7 +299,20 @@ function saveStoredProducts(products) {
 }
 
 /**
- * Muestra un toast elegante sin usar alert() nativo
+ * Escapa caracteres HTML especiales para prevenir inyección XSS en plantillas innerHTML
+ */
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Muestra un toast elegante sin usar alert() nativo (seguro contra XSS)
  */
 function showToast(message, type = "success") {
   let container = document.getElementById("toast-container");
@@ -312,9 +325,15 @@ function showToast(message, type = "success") {
 
   const toast = document.createElement("div");
   toast.className = `toast-item ${type === "error" ? "toast-error" : ""}`;
-  const icon = type === "error" ? "⚠️" : "✨";
-  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span>`;
+  const iconSpan = document.createElement("span");
+  iconSpan.className = "toast-icon";
+  iconSpan.textContent = type === "error" ? "⚠️" : "✨";
 
+  const msgSpan = document.createElement("span");
+  msgSpan.textContent = String(message || "");
+
+  toast.appendChild(iconSpan);
+  toast.appendChild(msgSpan);
   container.appendChild(toast);
 
   setTimeout(() => {

@@ -149,31 +149,37 @@
           badgeClass = "badge-featured";
         }
 
-        const starsCount = Number(prod.estrellas) || 5;
+        const starsCount = Math.min(5, Math.max(1, Number(prod.estrellas) || 5));
         const starsHtml = "★".repeat(starsCount);
+        const safeId = escapeHTML(prod.id);
+        const safeNombre = escapeHTML(prod.nombre);
+        const safeImagen = escapeHTML(prod.imagen);
+        const safeAroma = escapeHTML(prod.aroma || prod.categoria);
+        const safeDescCorta = escapeHTML(prod.descripcionCorta || "");
+        const safeBadgeText = escapeHTML(badgeText);
 
         return `
-          <article class="product-card fade-up visible" data-id="${prod.id}">
-            <div class="product-image-wrap" data-action="detail" data-id="${prod.id}">
+          <article class="product-card fade-up visible" data-id="${safeId}">
+            <div class="product-image-wrap" data-action="detail" data-id="${safeId}">
               <div class="product-badges">
-                ${badgeText ? `<span class="badge-tag ${badgeClass}">${badgeText}</span>` : ""}
+                ${safeBadgeText ? `<span class="badge-tag ${badgeClass}">${safeBadgeText}</span>` : ""}
               </div>
-              <img src="${prod.imagen}" alt="${prod.nombre} - DARVELÉ Velas Artesanales" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85'">
+              <img src="${safeImagen}" alt="${safeNombre} - DARVELÉ Velas Artesanales" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85'">
             </div>
             <div class="product-body">
               <div class="product-meta-top">
-                <span class="product-aroma">${prod.aroma || prod.categoria}</span>
+                <span class="product-aroma">${safeAroma}</span>
                 <span class="product-stars" aria-label="Calificación 5 de 5">${starsHtml}</span>
               </div>
-              <h3 class="product-title" data-action="detail" data-id="${prod.id}">${prod.nombre}</h3>
-              <p class="product-short-desc">${prod.descripcionCorta || ""}</p>
+              <h3 class="product-title" data-action="detail" data-id="${safeId}">${safeNombre}</h3>
+              <p class="product-short-desc">${safeDescCorta}</p>
               <div class="product-price-row">
                 <span class="price-current">${formatCOP(effectivePrice)}</span>
                 ${hasOffer ? `<span class="price-old">${formatCOP(prod.precio)}</span>` : ""}
               </div>
               <div class="product-actions">
-                <button type="button" class="btn-card-detail" data-action="detail" data-id="${prod.id}">Ver detalle</button>
-                <button type="button" class="btn-card-add" data-action="quick-add" data-id="${prod.id}">
+                <button type="button" class="btn-card-detail" data-action="detail" data-id="${safeId}">Ver detalle</button>
+                <button type="button" class="btn-card-add" data-action="quick-add" data-id="${safeId}">
                   <span>+ Agregar</span>
                 </button>
               </div>
@@ -541,18 +547,18 @@
         .map(
           (item) => `
           <div class="cart-item">
-            <img src="${item.imagen}" alt="${item.nombre}" class="cart-item-img">
+            <img src="${escapeHTML(item.imagen)}" alt="${escapeHTML(item.nombre)}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=300&q=80'">
             <div class="cart-item-details">
-              <div class="cart-item-title">${item.nombre}</div>
-              ${item.personalizacion ? `<div class="cart-item-custom">${item.personalizacion}</div>` : ""}
+              <div class="cart-item-title">${escapeHTML(item.nombre)}</div>
+              ${item.personalizacion ? `<div class="cart-item-custom">${escapeHTML(item.personalizacion)}</div>` : ""}
               <div class="cart-item-price">${formatCOP(item.precio * item.cantidad)}</div>
               <div class="cart-item-controls">
                 <div class="cart-qty-box">
-                  <button type="button" data-cart-minus="${item.cartKey}" aria-label="Disminuir">−</button>
-                  <span>${item.cantidad}</span>
-                  <button type="button" data-cart-plus="${item.cartKey}" aria-label="Aumentar">+</button>
+                  <button type="button" data-cart-minus="${escapeHTML(item.cartKey)}" aria-label="Disminuir">−</button>
+                  <span>${Number(item.cantidad) || 1}</span>
+                  <button type="button" data-cart-plus="${escapeHTML(item.cartKey)}" aria-label="Aumentar">+</button>
                 </div>
-                <button type="button" class="cart-remove-btn" data-cart-remove="${item.cartKey}">Eliminar</button>
+                <button type="button" class="cart-remove-btn" data-cart-remove="${escapeHTML(item.cartKey)}">Eliminar</button>
               </div>
             </div>
           </div>
@@ -717,8 +723,15 @@
   }
 
   /* --------------------------------------------------------------------------
-     ANIMACIONES SCROLL & WHATSAPP FLOTANTE
+     ANIMACIONES SCROLL, ATAJOS DE TECLADO (ESC) & WHATSAPP FLOTANTE
      -------------------------------------------------------------------------- */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeProductModal();
+      closeCartDrawer();
+      document.getElementById("mobile-nav-drawer")?.classList.remove("open");
+    }
+  });
   function initScrollAnimations() {
     const elements = document.querySelectorAll(".fade-up");
     if (!("IntersectionObserver" in window)) {

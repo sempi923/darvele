@@ -220,24 +220,30 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         .map((p) => {
           const hasOffer = p.precioOferta && Number(p.precioOferta) < Number(p.precio);
           const isActive = p.activo !== false;
+          const safeId = escapeHTML(p.id);
+          const safeNombre = escapeHTML(p.nombre);
+          const safeImagen = escapeHTML(p.imagen);
+          const safeAroma = escapeHTML(p.aroma || "");
+          const safeDuracion = escapeHTML(p.duracion || "30 horas");
+          const safeCategoria = escapeHTML(p.categoria);
 
           return `
             <tr>
               <td>
                 <div class="admin-prod-cell">
-                  <img src="${p.imagen}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=300&q=80'">
+                  <img src="${safeImagen}" alt="${safeNombre}" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=300&q=80'">
                   <div>
-                    <strong style="display:block; color:var(--bg-dark);">${p.nombre}</strong>
-                    <span style="font-size:0.78rem; color:var(--text-dark-muted);">${p.aroma || ""} • ${p.duracion || "30 horas"}</span>
+                    <strong style="display:block; color:var(--bg-dark);">${safeNombre}</strong>
+                    <span style="font-size:0.78rem; color:var(--text-dark-muted);">${safeAroma} • ${safeDuracion}</span>
                   </div>
                 </div>
               </td>
-              <td>${p.categoria}</td>
+              <td>${safeCategoria}</td>
               <td>
                 <strong>${formatCOP(hasOffer ? p.precioOferta : p.precio)}</strong>
                 ${hasOffer ? `<div style="font-size:0.75rem; text-decoration:line-through; color:#999;">${formatCOP(p.precio)}</div>` : ""}
               </td>
-              <td>${p.stock ?? 0} uds</td>
+              <td>${Number(p.stock) || 0} uds</td>
               <td>
                 <span class="status-pill ${isActive ? "status-active" : "status-inactive"}">
                   ${isActive ? "Activo" : "Inactivo"}
@@ -246,14 +252,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
               </td>
               <td>
                 <div class="admin-action-btns">
-                  <button type="button" class="btn-xs" data-edit="${p.id}">Editar</button>
-                  <button type="button" class="btn-xs" data-toggle-active="${p.id}">
+                  <button type="button" class="btn-xs" data-edit="${safeId}">Editar</button>
+                  <button type="button" class="btn-xs" data-toggle-active="${safeId}">
                     ${isActive ? "Desactivar" : "Activar"}
                   </button>
-                  <button type="button" class="btn-xs" data-toggle-featured="${p.id}">
+                  <button type="button" class="btn-xs" data-toggle-featured="${safeId}">
                     ${p.destacado ? "Quitar ★" : "Destacar ★"}
                   </button>
-                  <button type="button" class="btn-xs" style="color:#C0392B; border-color:rgba(192,57,43,0.3);" data-delete="${p.id}">
+                  <button type="button" class="btn-xs" style="color:#C0392B; border-color:rgba(192,57,43,0.3);" data-delete="${safeId}">
                     Eliminar
                   </button>
                 </div>
@@ -269,11 +275,17 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         .map((p) => {
           const hasOffer = p.precioOferta && Number(p.precioOferta) < Number(p.precio);
           const isActive = p.activo !== false;
+          const safeId = escapeHTML(p.id);
+          const safeNombre = escapeHTML(p.nombre);
+          const safeImagen = escapeHTML(p.imagen);
+          const safeAroma = escapeHTML(p.aroma || "Aroma artesanal");
+          const safeDuracion = escapeHTML(p.duracion || "35 horas");
+          const safeCategoria = escapeHTML(p.categoria);
 
           return `
             <article class="admin-prod-card">
               <div class="admin-prod-card-img-wrap">
-                <img src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=600&q=80'">
+                <img src="${safeImagen}" alt="${safeNombre}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=600&q=80'">
                 <div class="admin-prod-card-badges">
                   <span class="status-pill ${isActive ? "status-active" : "status-inactive"}" style="background:${isActive ? "#1E8449" : "#C0392B"}; color:#FFF;">
                     ${isActive ? "Activo" : "Inactivo"}
@@ -282,29 +294,29 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
                 </div>
               </div>
               <div class="admin-prod-card-body">
-                <span class="admin-prod-card-cat">${p.categoria}</span>
-                <h3 class="admin-prod-card-title">${p.nombre}</h3>
-                <div class="admin-prod-card-meta">${p.aroma || "Aroma artesanal"} • ${p.duracion || "35 horas"}</div>
+                <span class="admin-prod-card-cat">${safeCategoria}</span>
+                <h3 class="admin-prod-card-title">${safeNombre}</h3>
+                <div class="admin-prod-card-meta">${safeAroma} • ${safeDuracion}</div>
 
                 <div class="admin-prod-card-price-stock">
                   <div>
                     <strong style="font-size:1.15rem; color:var(--bg-dark);">${formatCOP(hasOffer ? p.precioOferta : p.precio)}</strong>
                     ${hasOffer ? `<span style="font-size:0.82rem; text-decoration:line-through; color:#888; margin-left:6px;">${formatCOP(p.precio)}</span>` : ""}
                   </div>
-                  <span style="font-size:0.88rem; font-weight:600; color:var(--text-dark-muted);">Stock: ${p.stock ?? 0} uds</span>
+                  <span style="font-size:0.88rem; font-weight:600; color:var(--text-dark-muted);">Stock: ${Number(p.stock) || 0} uds</span>
                 </div>
 
                 <div class="admin-prod-card-actions">
-                  <button type="button" class="btn-admin-card btn-edit-primary" data-edit="${p.id}">
+                  <button type="button" class="btn-admin-card btn-edit-primary" data-edit="${safeId}">
                     ✎ Editar Producto
                   </button>
-                  <button type="button" class="btn-admin-card" data-toggle-active="${p.id}">
+                  <button type="button" class="btn-admin-card" data-toggle-active="${safeId}">
                     ${isActive ? "Desactivar Producto" : "Activar Producto"}
                   </button>
-                  <button type="button" class="btn-admin-card" data-toggle-featured="${p.id}">
+                  <button type="button" class="btn-admin-card" data-toggle-featured="${safeId}">
                     ${p.destacado ? "Quitar de Destacados ★" : "Marcar Destacado ★"}
                   </button>
-                  <button type="button" class="btn-admin-card btn-delete-danger" data-delete="${p.id}">
+                  <button type="button" class="btn-admin-card btn-delete-danger" data-delete="${safeId}">
                     🗑 Eliminar Producto
                   </button>
                 </div>
@@ -333,11 +345,18 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     });
   }
 
+  let idSequence = 0;
+
+  function generateUniqueProductId() {
+    idSequence = (idSequence + 1) % 1000;
+    return "prod_" + Date.now() + (idSequence > 1 ? "_" + idSequence : "");
+  }
+
   /* --------------------------------------------------------------------------
      FUNCIONES OBLIGATORIAS CRUD: crearProducto, editarProducto, eliminarProducto
      -------------------------------------------------------------------------- */
   function crearProducto(productData) {
-    const uniqueId = "prod_" + Date.now();
+    const uniqueId = generateUniqueProductId();
     const newProd = {
       id: uniqueId,
       nombre: productData.nombre,
@@ -653,7 +672,38 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
               showToast("El archivo JSON no contiene un array válido de productos", "error");
               return;
             }
-            products = imported;
+            const normalized = imported
+              .filter((item) => item && typeof item === "object" && item.nombre)
+              .map((item, idx) => ({
+                id: item.id ? String(item.id) : `prod_${Date.now()}_${idx}`,
+                nombre: String(item.nombre).trim(),
+                precio: Math.max(0, Number(item.precio) || 0),
+                precioOferta: item.precioOferta ? Math.max(0, Number(item.precioOferta)) : null,
+                categoria: item.categoria || "Velas Aromáticas",
+                tags: Array.isArray(item.tags) ? item.tags : [item.categoria || "Velas Aromáticas"],
+                aroma: item.aroma ? String(item.aroma) : "",
+                descripcionCorta: item.descripcionCorta ? String(item.descripcionCorta) : "",
+                descripcionLarga: item.descripcionLarga ? String(item.descripcionLarga) : "",
+                duracion: item.duracion ? String(item.duracion) : "35 horas",
+                intensidad: item.intensidad ? String(item.intensidad) : "Media / Alta",
+                stock: Math.max(0, Number(item.stock) || 0),
+                imagen:
+                  item.imagen ||
+                  "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85",
+                galeria: Array.isArray(item.galeria) && item.galeria.length > 0 ? item.galeria : [item.imagen],
+                personalizable: item.personalizable !== false,
+                destacado: Boolean(item.destacado),
+                activo: item.activo !== false,
+                badge: item.badge || "Nuevo",
+                estrellas: Math.min(5, Math.max(1, Number(item.estrellas) || 5))
+              }));
+
+            if (normalized.length === 0) {
+              showToast("El archivo JSON no contiene productos válidos con nombre", "error");
+              return;
+            }
+
+            products = normalized;
             localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
             showToast(`¡${products.length} productos importados! Recargando... ✅`);
             setTimeout(() => {
