@@ -1,6 +1,7 @@
 /**
  * ============================================================================
  * DARVELÉ — Panel de Administración & Gestión de Inventario (admin.js)
+ * Especialidad: Velas Decorativas en Figura & Detalles Hechos a Mano
  * Arquitectura: Leonardo | Lógica CRUD, Persistencia v2 & JSON: Donatello
  * ============================================================================
  */
@@ -92,13 +93,13 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
 
     if (formCatSelect) {
       formCatSelect.innerHTML = validCategories
-        .map((cat) => `<option value="${cat}">${cat}</option>`)
+        .map((cat) => `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`)
         .join("");
     }
 
     if (filterCatSelect) {
       filterCatSelect.innerHTML = DARVELE_CATEGORIES.map(
-        (cat) => `<option value="${cat}">${cat}</option>`
+        (cat) => `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`
       ).join("");
     }
   }
@@ -112,7 +113,6 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       reader.onerror = () => reject(new Error("No se pudo leer el archivo de imagen."));
       reader.onload = (ev) => {
         const rawDataUrl = ev.target.result;
-        // Si pesa menos de 800KB y no necesitamos redimensionar, igual verificamos o comprimimos si supera 800KB
         if (file.size <= 800 * 1024) {
           resolve(rawDataUrl);
           return;
@@ -174,6 +174,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     renderProductsTable();
   }
 
+  function getFigura(p) {
+    return p.figura || p.categoria || "Figura decorativa";
+  }
+
+  function getIncluye(p) {
+    return p.incluye || p.duracion || "Caja, cinta y tarjeta";
+  }
+
   function renderProductsTable() {
     const tbody = document.getElementById("admin-products-tbody");
     const mobileCardsContainer = document.getElementById("admin-products-mobile-cards");
@@ -186,10 +194,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         (Array.isArray(p.tags) && p.tags.includes(adminCategoryFilter));
 
       const q = adminSearchQuery.trim().toLowerCase();
+      const figuraText = getFigura(p).toLowerCase();
+      const incluyeText = getIncluye(p).toLowerCase();
+
       const matchesQuery =
         !q ||
         (p.nombre && p.nombre.toLowerCase().includes(q)) ||
-        (p.aroma && p.aroma.toLowerCase().includes(q)) ||
+        figuraText.includes(q) ||
+        incluyeText.includes(q) ||
         (p.categoria && p.categoria.toLowerCase().includes(q));
 
       return matchesCat && matchesQuery;
@@ -223,18 +235,18 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
           const safeId = escapeHTML(p.id);
           const safeNombre = escapeHTML(p.nombre);
           const safeImagen = escapeHTML(p.imagen);
-          const safeAroma = escapeHTML(p.aroma || "");
-          const safeDuracion = escapeHTML(p.duracion || "30 horas");
+          const safeFigura = escapeHTML(getFigura(p));
+          const safeIncluye = escapeHTML(getIncluye(p));
           const safeCategoria = escapeHTML(p.categoria);
 
           return `
             <tr>
               <td>
                 <div class="admin-prod-cell">
-                  <img src="${safeImagen}" alt="${safeNombre}" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=300&q=80'">
+                  <img src="${safeImagen}" alt="${safeNombre}" onerror="this.src='https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=300&q=80'">
                   <div>
                     <strong style="display:block; color:var(--bg-dark);">${safeNombre}</strong>
-                    <span style="font-size:0.78rem; color:var(--text-dark-muted);">${safeAroma} • ${safeDuracion}</span>
+                    <span style="font-size:0.78rem; color:var(--text-dark-muted);">${safeFigura} • Incluye: ${safeIncluye}</span>
                   </div>
                 </div>
               </td>
@@ -278,14 +290,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
           const safeId = escapeHTML(p.id);
           const safeNombre = escapeHTML(p.nombre);
           const safeImagen = escapeHTML(p.imagen);
-          const safeAroma = escapeHTML(p.aroma || "Aroma artesanal");
-          const safeDuracion = escapeHTML(p.duracion || "35 horas");
+          const safeFigura = escapeHTML(getFigura(p));
+          const safeIncluye = escapeHTML(getIncluye(p));
           const safeCategoria = escapeHTML(p.categoria);
 
           return `
             <article class="admin-prod-card">
               <div class="admin-prod-card-img-wrap">
-                <img src="${safeImagen}" alt="${safeNombre}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=600&q=80'">
+                <img src="${safeImagen}" alt="${safeNombre}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=600&q=80'">
                 <div class="admin-prod-card-badges">
                   <span class="status-pill ${isActive ? "status-active" : "status-inactive"}" style="background:${isActive ? "#1E8449" : "#C0392B"}; color:#FFF;">
                     ${isActive ? "Activo" : "Inactivo"}
@@ -296,7 +308,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
               <div class="admin-prod-card-body">
                 <span class="admin-prod-card-cat">${safeCategoria}</span>
                 <h3 class="admin-prod-card-title">${safeNombre}</h3>
-                <div class="admin-prod-card-meta">${safeAroma} • ${safeDuracion}</div>
+                <div class="admin-prod-card-meta">${safeFigura} • Incluye: ${safeIncluye}</div>
 
                 <div class="admin-prod-card-price-stock">
                   <div>
@@ -364,11 +376,11 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       precioOferta: productData.precioOferta,
       categoria: productData.categoria,
       tags: [productData.categoria],
-      aroma: productData.aroma,
+      figura: productData.figura,
+      incluye: productData.incluye,
+      acabado: "Pintada a mano",
       descripcionCorta: productData.descripcionCorta,
-      descripcionLarga: productData.descripcionLarga,
-      duracion: productData.duracion,
-      intensidad: "Media / Alta",
+      descripcionLarga: productData.descripcionLarga || productData.descripcionCorta,
       stock: productData.stock,
       imagen: productData.imagen,
       galeria: [productData.imagen],
@@ -400,10 +412,10 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       precioOferta: productData.precioOferta,
       categoria: productData.categoria,
       tags: [productData.categoria],
-      aroma: productData.aroma,
+      figura: productData.figura,
+      incluye: productData.incluye,
       descripcionCorta: productData.descripcionCorta,
-      descripcionLarga: productData.descripcionLarga,
-      duracion: productData.duracion,
+      descripcionLarga: productData.descripcionLarga || productData.descripcionCorta,
       stock: productData.stock,
       imagen: productData.imagen,
       galeria: [productData.imagen],
@@ -517,10 +529,10 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         const precioOfertaRaw = document.getElementById("prod-precio-oferta").value;
         const precioOferta = precioOfertaRaw ? Number(precioOfertaRaw) : null;
         const categoria = document.getElementById("prod-categoria").value;
-        const aroma = document.getElementById("prod-aroma").value.trim();
+        const figura = document.getElementById("prod-figura").value.trim();
+        const incluye = document.getElementById("prod-incluye").value.trim() || "Caja, cinta y tarjeta personalizada";
         const descripcionCorta = document.getElementById("prod-desc-corta").value.trim();
         const descripcionLarga = document.getElementById("prod-desc-larga").value.trim();
-        const duracion = document.getElementById("prod-duracion").value.trim() || "35 horas";
         const stock = Number(document.getElementById("prod-stock").value) || 0;
         const personalizable = document.getElementById("prod-personalizable").checked;
         const destacado = document.getElementById("prod-destacado").checked;
@@ -529,7 +541,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         const finalImage =
           uploadedImageBase64 ||
           pastedUrl ||
-          "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85";
+          "https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=900&q=85";
 
         if (!nombre || precio <= 0) {
           showToast("El nombre y un precio mayor a 0 son obligatorios", "error");
@@ -548,10 +560,10 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
           precio,
           precioOferta,
           categoria,
-          aroma,
+          figura,
+          incluye,
           descripcionCorta,
           descripcionLarga,
-          duracion,
           stock,
           imagen: finalImage,
           personalizable,
@@ -583,10 +595,10 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     document.getElementById("prod-precio").value = prod.precio;
     document.getElementById("prod-precio-oferta").value = prod.precioOferta || "";
     document.getElementById("prod-categoria").value = prod.categoria;
-    document.getElementById("prod-aroma").value = prod.aroma || "";
+    document.getElementById("prod-figura").value = getFigura(prod);
+    document.getElementById("prod-incluye").value = getIncluye(prod);
     document.getElementById("prod-desc-corta").value = prod.descripcionCorta || "";
     document.getElementById("prod-desc-larga").value = prod.descripcionLarga || "";
-    document.getElementById("prod-duracion").value = prod.duracion || "35 horas";
     document.getElementById("prod-stock").value = prod.stock ?? 10;
 
     const isBase64 = typeof prod.imagen === "string" && prod.imagen.startsWith("data:");
@@ -600,7 +612,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     uploadedImageBase64 = isBase64 ? prod.imagen : "";
     const previewBox = document.getElementById("prod-image-preview");
     if (previewBox) {
-      previewBox.innerHTML = `<img src="${prod.imagen}" alt="${prod.nombre}">`;
+      previewBox.innerHTML = `<img src="${prod.imagen}" alt="${escapeHTML(prod.nombre)}">`;
     }
 
     document.getElementById("admin-cancel-edit-btn").style.display = "inline-flex";
@@ -679,17 +691,17 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
                 nombre: String(item.nombre).trim(),
                 precio: Math.max(0, Number(item.precio) || 0),
                 precioOferta: item.precioOferta ? Math.max(0, Number(item.precioOferta)) : null,
-                categoria: item.categoria || "Velas Aromáticas",
-                tags: Array.isArray(item.tags) ? item.tags : [item.categoria || "Velas Aromáticas"],
-                aroma: item.aroma ? String(item.aroma) : "",
+                categoria: item.categoria || "Velas Decorativas",
+                tags: Array.isArray(item.tags) ? item.tags : [item.categoria || "Velas Decorativas"],
+                figura: item.figura ? String(item.figura) : item.categoria || "Figura decorativa",
+                incluye: item.incluye ? String(item.incluye) : "Caja, cinta y tarjeta personalizada",
+                acabado: item.acabado ? String(item.acabado) : "Pintada a mano",
                 descripcionCorta: item.descripcionCorta ? String(item.descripcionCorta) : "",
                 descripcionLarga: item.descripcionLarga ? String(item.descripcionLarga) : "",
-                duracion: item.duracion ? String(item.duracion) : "35 horas",
-                intensidad: item.intensidad ? String(item.intensidad) : "Media / Alta",
                 stock: Math.max(0, Number(item.stock) || 0),
                 imagen:
                   item.imagen ||
-                  "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85",
+                  "https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=900&q=85",
                 galeria: Array.isArray(item.galeria) && item.galeria.length > 0 ? item.galeria : [item.imagen],
                 personalizable: item.personalizable !== false,
                 destacado: Boolean(item.destacado),
@@ -721,14 +733,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     if (restoreDefaultsBtn) {
       restoreDefaultsBtn.addEventListener("click", () => {
         const confirmed = window.confirm(
-          "¿Estás seguro de restablecer los 8 productos de ejemplo? Esto reemplazará tu catálogo actual."
+          "¿Estás seguro de restablecer los 6 productos de ejemplo en figura? Esto reemplazará tu catálogo actual."
         );
         if (!confirmed) return;
 
         products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
         localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
         renderAdminDashboard();
-        showToast("Catálogo restablecido con los 8 productos de ejemplo ✅");
+        showToast("Catálogo restablecido con los 6 productos de figuras ✅");
       });
     }
 

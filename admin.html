@@ -28,7 +28,7 @@
       <span class="section-tag" style="color:var(--gold);">Acceso Privado</span>
       <h1 class="serif" style="font-size:1.75rem; margin-bottom:0.5rem; color:var(--text-light);">Atelier DARVELÉ</h1>
       <p style="font-size:0.9rem; color:var(--text-light-muted); margin-bottom:1.75rem;">
-        Ingresa la clave maestra para administrar el catálogo de velas y detalles.
+        Ingresa la clave maestra para administrar el catálogo de velas decorativas en figura y detalles.
       </p>
 
       <form id="admin-login-form">
@@ -102,17 +102,17 @@
 
             <div class="form-group">
               <label for="prod-nombre">Nombre del Producto *</label>
-              <input type="text" id="prod-nombre" class="form-control admin-input" placeholder="Ej: Vela Lavanda Relajante" required>
+              <input type="text" id="prod-nombre" class="form-control admin-input" placeholder="Ej: Vela Graduada Niña" required>
             </div>
 
             <div class="admin-form-row">
               <div class="form-group">
                 <label for="prod-precio">Precio COP *</label>
-                <input type="number" id="prod-precio" class="form-control admin-input" placeholder="45000" min="1000" required>
+                <input type="number" id="prod-precio" class="form-control admin-input" placeholder="25000" min="1000" required>
               </div>
               <div class="form-group">
                 <label for="prod-precio-oferta">Precio Oferta (Opcional)</label>
-                <input type="number" id="prod-precio-oferta" class="form-control admin-input" placeholder="40000" min="0">
+                <input type="number" id="prod-precio-oferta" class="form-control admin-input" placeholder="22000" min="0">
               </div>
             </div>
 
@@ -123,33 +123,33 @@
               </div>
               <div class="form-group">
                 <label for="prod-stock">Stock *</label>
-                <input type="number" id="prod-stock" class="form-control admin-input" value="15" min="0" required>
+                <input type="number" id="prod-stock" class="form-control admin-input" value="20" min="0" required>
               </div>
             </div>
 
             <div class="admin-form-row">
               <div class="form-group">
-                <label for="prod-aroma">Aroma *</label>
-                <input type="text" id="prod-aroma" class="form-control admin-input" placeholder="Ej: Lavanda & Manzanilla" required>
+                <label for="prod-figura">Figura / Tema *</label>
+                <input type="text" id="prod-figura" class="form-control admin-input" placeholder="Ej: Niña Graduada con Birrete Dorado" required>
               </div>
               <div class="form-group">
-                <label for="prod-duracion">Duración</label>
-                <input type="text" id="prod-duracion" class="form-control admin-input" placeholder="Ej: 35 horas" value="35 horas">
+                <label for="prod-incluye">Medidas / Incluye</label>
+                <input type="text" id="prod-incluye" class="form-control admin-input" placeholder="Ej: Incluye: caja, cinta y tarjeta" value="Caja, cinta y tarjeta personalizada">
               </div>
             </div>
 
             <div class="form-group">
               <label for="prod-desc-corta">Descripción Corta *</label>
-              <input type="text" id="prod-desc-corta" class="form-control admin-input" placeholder="Frase emotiva para la tarjeta del catálogo" required>
+              <input type="text" id="prod-desc-corta" class="form-control admin-input" placeholder="Descripción breve de la figura y qué incluye" required>
             </div>
 
             <div class="form-group">
               <label for="prod-desc-larga">Descripción Larga</label>
-              <textarea id="prod-desc-larga" rows="3" class="form-control admin-input" placeholder="Historia completa, notas olfativas y qué incluye..."></textarea>
+              <textarea id="prod-desc-larga" rows="3" class="form-control admin-input" placeholder="Detalles de la figura, acabados en dorado y opciones de personalización..."></textarea>
             </div>
 
             <div class="form-group">
-              <label for="prod-imagen-file">Subir archivo de imagen (con Preview)</label>
+              <label for="prod-imagen-file">Subir foto real desde tu celular o PC (con Preview)</label>
               <input type="file" id="prod-imagen-file" accept="image/*" class="form-control admin-input">
             </div>
 
@@ -192,7 +192,7 @@
                 ⬆ Importar JSON
                 <input type="file" id="admin-import-json-input" accept=".json,application/json" style="display:none;">
               </label>
-              <button type="button" id="admin-restore-defaults-btn" class="btn btn-outline-gold admin-touch-btn" title="Restablecer los 8 productos de ejemplo">
+              <button type="button" id="admin-restore-defaults-btn" class="btn btn-outline-gold admin-touch-btn" title="Restablecer los 6 productos de ejemplo">
                 Restablecer productos de ejemplo
               </button>
             </div>
@@ -201,7 +201,7 @@
           <!-- Buscador y Filtro por categoría en Admin -->
           <div class="admin-filters-bar">
             <div class="form-group" style="margin-bottom:0;">
-              <input type="search" id="admin-search-input" class="form-control admin-input" placeholder="Buscar por nombre o aroma...">
+              <input type="search" id="admin-search-input" class="form-control admin-input" placeholder="Buscar por nombre, figura o evento...">
             </div>
             <div class="form-group" style="margin-bottom:0;">
               <select id="admin-filter-category" class="form-control admin-input" aria-label="Filtrar por categoría"></select>

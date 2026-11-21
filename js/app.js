@@ -1,6 +1,7 @@
 /**
  * ============================================================================
  * DARVELÉ — Lógica Principal de la Tienda Pública (app.js)
+ * Especialidad: Velas Decorativas en Figura & Detalles Hechos a Mano
  * Arquitectura: Leonardo | Programación: Donatello | UI: Raphael | Copy: Michelangelo
  * ============================================================================
  */
@@ -17,10 +18,10 @@
 
   // Estado del constructor "Arma tu detalle"
   const builderState = {
-    candleName: "Vela Lavanda Relajante (220g)",
-    candlePrice: 45000,
-    boxName: "Caja Rígida Marfil & Lazo Dorado",
-    boxPrice: 18000,
+    candleName: "Vela Graduada Niña (Toga & Birrete Dorado)",
+    candlePrice: 25000,
+    boxName: "Caja Transparente con Cinta & Tarjeta (Incluida)",
+    boxPrice: 0,
     recipient: "",
     message: ""
   };
@@ -74,7 +75,7 @@
 
     container.innerHTML = DARVELE_CATEGORIES.map((cat) => {
       const isActive = cat === activeCategory ? "active" : "";
-      return `<button type="button" class="category-pill ${isActive}" data-category="${cat}">${cat}</button>`;
+      return `<button type="button" class="category-pill ${isActive}" data-category="${escapeHTML(cat)}">${escapeHTML(cat)}</button>`;
     }).join("");
 
     container.querySelectorAll(".category-pill").forEach((btn) => {
@@ -86,6 +87,14 @@
     });
   }
 
+  function getProductFigura(prod) {
+    return prod.figura || prod.categoria || "Figura en cera";
+  }
+
+  function getProductIncluye(prod) {
+    return prod.incluye || prod.duracion || "Caja, cinta y tarjeta personalizada";
+  }
+
   function getFilteredProducts() {
     return allProducts.filter((prod) => {
       const matchesCategory =
@@ -95,10 +104,14 @@
         (activeCategory === "Personalizadas" && prod.personalizable);
 
       const q = searchQuery.trim().toLowerCase();
+      const figuraText = getProductFigura(prod).toLowerCase();
+      const incluyeText = getProductIncluye(prod).toLowerCase();
+
       const matchesSearch =
         !q ||
-        prod.nombre.toLowerCase().includes(q) ||
-        (prod.aroma && prod.aroma.toLowerCase().includes(q)) ||
+        (prod.nombre && prod.nombre.toLowerCase().includes(q)) ||
+        figuraText.includes(q) ||
+        incluyeText.includes(q) ||
         (prod.categoria && prod.categoria.toLowerCase().includes(q)) ||
         (prod.descripcionCorta && prod.descripcionCorta.toLowerCase().includes(q));
 
@@ -115,8 +128,8 @@
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div class="empty-catalog-box">
-          <h3 class="serif" style="font-size:1.5rem; margin-bottom:0.5rem;">No encontramos velas con ese filtro</h3>
-          <p style="color:var(--text-dark-muted); margin-bottom:1.25rem;">Prueba con otra palabra clave o explora todas nuestras creaciones artesanales.</p>
+          <h3 class="serif" style="font-size:1.5rem; margin-bottom:0.5rem;">No encontramos figuras con ese filtro</h3>
+          <p style="color:var(--text-dark-muted); margin-bottom:1.25rem;">Prueba buscando por graduación, pesebre, bautizo, cumpleaños o explora toda la colección.</p>
           <button type="button" class="btn btn-gold" id="reset-filters-btn">Ver toda la colección</button>
         </div>
       `;
@@ -154,7 +167,7 @@
         const safeId = escapeHTML(prod.id);
         const safeNombre = escapeHTML(prod.nombre);
         const safeImagen = escapeHTML(prod.imagen);
-        const safeAroma = escapeHTML(prod.aroma || prod.categoria);
+        const safeIncluye = escapeHTML(getProductIncluye(prod));
         const safeDescCorta = escapeHTML(prod.descripcionCorta || "");
         const safeBadgeText = escapeHTML(badgeText);
 
@@ -164,11 +177,11 @@
               <div class="product-badges">
                 ${safeBadgeText ? `<span class="badge-tag ${badgeClass}">${safeBadgeText}</span>` : ""}
               </div>
-              <img src="${safeImagen}" alt="${safeNombre} - DARVELÉ Velas Artesanales" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85'">
+              <img src="${safeImagen}" alt="${safeNombre} - DARVELÉ Velas Decorativas en Figura" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=900&q=85'">
             </div>
             <div class="product-body">
               <div class="product-meta-top">
-                <span class="product-aroma">${safeAroma}</span>
+                <span class="product-aroma">Incluye: ${safeIncluye}</span>
                 <span class="product-stars" aria-label="Calificación 5 de 5">${starsHtml}</span>
               </div>
               <h3 class="product-title" data-action="detail" data-id="${safeId}">${safeNombre}</h3>
@@ -200,7 +213,7 @@
     grid.querySelectorAll("[data-action='quick-add']").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
-        const prod = allProducts.find((p) => p.id === id);
+        const prod = allProducts.find((p) => String(p.id) === String(id));
         if (prod) {
           addToCart(prod, 1, null);
         }
@@ -243,7 +256,7 @@
      MODAL DE DETALLE DE PRODUCTO
      -------------------------------------------------------------------------- */
   function openProductModal(productId) {
-    const prod = allProducts.find((p) => p.id === productId);
+    const prod = allProducts.find((p) => String(p.id) === String(productId));
     if (!prod) return;
 
     currentModalProduct = prod;
@@ -261,9 +274,14 @@
     `;
     document.getElementById("modal-description").textContent =
       prod.descripcionLarga || prod.descripcionCorta || "";
-    document.getElementById("modal-spec-aroma").textContent = prod.aroma || "Aroma de autor";
-    document.getElementById("modal-spec-duration").textContent = prod.duracion || "35 horas";
-    document.getElementById("modal-spec-intensity").textContent = prod.intensidad || "Media / Alta";
+
+    const specFiguraEl = document.getElementById("modal-spec-figura");
+    const specIncluyeEl = document.getElementById("modal-spec-incluye");
+    const specAcabadoEl = document.getElementById("modal-spec-acabado");
+
+    if (specFiguraEl) specFiguraEl.textContent = getProductFigura(prod);
+    if (specIncluyeEl) specIncluyeEl.textContent = getProductIncluye(prod);
+    if (specAcabadoEl) specAcabadoEl.textContent = prod.acabado || "Pintada a mano";
 
     // Galería de imágenes
     const mainImg = document.getElementById("modal-main-image");
@@ -276,7 +294,7 @@
     thumbsContainer.innerHTML = gallery
       .map(
         (imgUrl, idx) => `
-        <img src="${imgUrl}" alt="Vista ${idx + 1}" class="modal-thumb ${idx === 0 ? "active" : ""}" data-src="${imgUrl}">
+        <img src="${escapeHTML(imgUrl)}" alt="Vista ${idx + 1}" class="modal-thumb ${idx === 0 ? "active" : ""}" data-src="${escapeHTML(imgUrl)}">
       `
       )
       .join("");
@@ -290,7 +308,7 @@
     });
 
     // Resetear campos de personalización del modal
-    document.getElementById("modal-box-color").value = "Marfil Imperial con Lazo Champaña";
+    document.getElementById("modal-box-color").value = "Caja Transparente con Cinta Dorada Champaña";
     document.getElementById("modal-card-message").value = "";
     document.getElementById("modal-dedication").value = "";
     document.getElementById("modal-qty-input").value = 1;
@@ -331,7 +349,7 @@
 
     if (qtyPlus && qtyInput) {
       qtyPlus.addEventListener("click", () => {
-        const val = Math.min(50, (parseInt(qtyInput.value, 10) || 1) + 1);
+        const val = Math.min(100, (parseInt(qtyInput.value, 10) || 1) + 1);
         qtyInput.value = val;
       });
     }
@@ -345,8 +363,8 @@
         const dedication = document.getElementById("modal-dedication").value.trim();
 
         const customDetails = [];
-        if (boxColor) customDetails.push(`Caja: ${boxColor}`);
-        if (dedication) customDetails.push(`Etiqueta: "${dedication}"`);
+        if (boxColor) customDetails.push(`Empaque: ${boxColor}`);
+        if (dedication) customDetails.push(`Personalización: "${dedication}"`);
         if (cardMsg) customDetails.push(`Tarjeta: "${cardMsg}"`);
 
         addToCart(currentModalProduct, qty, customDetails.join(" | "));
@@ -378,7 +396,7 @@
         candleCards.forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
         builderState.candleName = card.getAttribute("data-name");
-        builderState.candlePrice = Number(card.getAttribute("data-price")) || 45000;
+        builderState.candlePrice = Number(card.getAttribute("data-price")) || 25000;
         updateBuilderDisplay();
       });
     });
@@ -388,7 +406,7 @@
         boxCards.forEach((b) => b.classList.remove("selected"));
         card.classList.add("selected");
         builderState.boxName = card.getAttribute("data-name");
-        builderState.boxPrice = Number(card.getAttribute("data-price")) || 18000;
+        builderState.boxPrice = Number(card.getAttribute("data-price")) || 0;
         updateBuilderDisplay();
       });
     });
@@ -407,7 +425,7 @@
 
         const total = builderState.candlePrice + builderState.boxPrice;
         const customProduct = {
-          id: "custom-" + Date.now(),
+          id: "custom_" + Date.now(),
           nombre: `Detalle Personalizado DARVELÉ`,
           precio: total,
           precioOferta: null,
@@ -415,10 +433,10 @@
         };
 
         const details = [
-          `Vela: ${builderState.candleName}`,
+          `Figura: ${builderState.candleName}`,
           `Empaque: ${builderState.boxName}`,
-          recipient ? `Para: ${recipient}` : null,
-          `Mensaje: "${message}"`
+          recipient ? `Nombre/Fecha: ${recipient}` : null,
+          `Tarjeta: "${message}"`
         ]
           .filter(Boolean)
           .join(" | ");
@@ -536,8 +554,8 @@
     if (cart.length === 0) {
       itemsContainer.innerHTML = `
         <div style="text-align:center; padding:3rem 1rem;">
-          <p class="serif" style="font-size:1.3rem; margin-bottom:0.5rem;">Tu carrito aún está apagado 🕯️</p>
-          <p style="font-size:0.9rem; color:var(--text-dark-muted); margin-bottom:1.5rem;">Elige una vela artesanal o arma un detalle inolvidable para iluminar a alguien especial.</p>
+          <p class="serif" style="font-size:1.3rem; margin-bottom:0.5rem;">Tu carrito aún está vacío 🕯️</p>
+          <p style="font-size:0.9rem; color:var(--text-dark-muted); margin-bottom:1.5rem;">Elige una vela decorativa en figura o arma tu detalle personalizado para sorprender a alguien especial.</p>
         </div>
       `;
       if (checkoutWrapper) checkoutWrapper.style.display = "none";
@@ -547,7 +565,7 @@
         .map(
           (item) => `
           <div class="cart-item">
-            <img src="${escapeHTML(item.imagen)}" alt="${escapeHTML(item.nombre)}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=300&q=80'">
+            <img src="${escapeHTML(item.imagen)}" alt="${escapeHTML(item.nombre)}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=300&q=80'">
             <div class="cart-item-details">
               <div class="cart-item-title">${escapeHTML(item.nombre)}</div>
               ${item.personalizacion ? `<div class="cart-item-custom">${escapeHTML(item.personalizacion)}</div>` : ""}
@@ -732,6 +750,7 @@
       document.getElementById("mobile-nav-drawer")?.classList.remove("open");
     }
   });
+
   function initScrollAnimations() {
     const elements = document.querySelectorAll(".fade-up");
     if (!("IntersectionObserver" in window)) {
