@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DARVELÉ | Velas Artesanales y Detalles</title>
+  <meta name="description" content="DARVELÉ — Velas artesanales de cera de soya y detalles personalizados hechos a mano en Colombia. Regalos que enamoran, aromas que abrazan el alma y envíos a todo el país.">
+  <meta name="keywords" content="velas artesanales colombia, detalles para regalo, velas aromaticas, cajas de regalo personalizadas, darvele">
+  <meta name="theme-color" content="#0B0B1E">
+
+  <!-- Google Fonts: Cormorant Garamond, Playfair Display & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+
+  <!-- Estilos Principales -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. HEADER FIJO
+       ======================================================================== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#inicio" class="brand-logo" aria-label="DARVELÉ Inicio">
+        <span class="brand-logo-title">DARVELÉ</span>
+        <span class="brand-logo-sub">VELAS &amp; DETALLES</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <ul>
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#tienda">Tienda</a></li>
+          <li><a href="#arma-tu-detalle">Arma tu detalle</a></li>
+          <li><a href="#nosotros">Nosotros</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" id="open-cart-btn" class="cart-trigger-btn" aria-label="Abrir carrito de compras">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          <span id="header-cart-count" class="cart-count-badge">0</span>
+          <span id="header-cart-total" class="cart-total-header">$0</span>
+        </button>
+
+        <button type="button" id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Abrir menú móvil">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="header-search-wrap">
+        <input type="search" id="header-search" class="header-search-input" placeholder="Buscar aroma o vela..." aria-label="Buscar velas o detalles">
+        <span class="header-search-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- Menú desplegable Mobile -->
+    <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+      <ul>
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#tienda">Tienda</a></li>
+        <li><a href="#arma-tu-detalle">Arma tu detalle</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- ======================================================================
+         2. HERO PANTALLA COMPLETA
+         ====================================================================== -->
+    <section id="inicio" class="hero-section">
+      <div class="hero-bg-image" aria-hidden="true"></div>
+      <div class="hero-candle-glow" aria-hidden="true"></div>
+      <div class="candle-flame-orb" aria-hidden="true"></div>
+
+      <div class="container">
+        <div class="hero-content fade-up visible">
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            <span>Envíos a toda Colombia</span>
+          </div>
+
+          <h1 class="hero-title">
+            Enciende momentos <span>que se sienten</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Velas artesanales y detalles hechos a mano en Colombia. Cera de soya 100% natural, fragancias de alta perfumería y cajas de regalo diseñadas para abrazar el corazón de quien más quieres.
+          </p>
+
+          <div class="hero-cta-group">
+            <a href="#tienda" class="btn btn-gold">Ver Catálogo</a>
+            <a href="#arma-tu-detalle" class="btn btn-outline-white">Armar mi detalle</a>
+          </div>
+
+          <div class="hero-trust-metrics">
+            <div class="trust-metric">
+              <strong>100% Soya</strong>
+              <span>Ecológicas y libres de humo negro</span>
+            </div>
+            <div class="trust-metric">
+              <strong>+1.500</strong>
+              <span>Momentos iluminados en Colombia</span>
+            </div>
+            <div class="trust-metric">
+              <strong>A Mano</strong>
+              <span>Personalizadas con tu mensaje</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. BARRA DE BENEFICIOS
+         ====================================================================== -->
+    <section class="benefits-bar" aria-label="Beneficios DARVELÉ">
+      <div class="container">
+        <div class="benefits-grid">
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2c1.5 3.5 4 6 4 9a4 4 0 1 1-8 0c0-3 2.5-5.5 4-9z"></path><path d="M12 15v7"></path><path d="M8 22h8"></path></svg>
+            </div>
+            <div class="benefit-text">
+              <strong>Hecho a mano</strong>
+              <span>Vertidas una a una con amor</span>
+            </div>
+          </div>
+
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+            <div class="benefit-text">
+              <strong>Envío rápido</strong>
+              <span>Seguro a toda Colombia</span>
+            </div>
+          </div>
+
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </div>
+            <div class="benefit-text">
+              <strong>Personalizable</strong>
+              <span>Nombres, cajas y dedicatorias</span>
+            </div>
+          </div>
+
+          <div class="benefit-item">
+            <div class="benefit-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+            </div>
+            <div class="benefit-text">
+              <strong>Aroma duradero</strong>
+              <span>Perfuma incluso sin encender</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4 & 5. CATEGORÍAS CON FILTROS Y CATÁLOGO EN GRID
+         ====================================================================== -->
+    <section id="tienda" class="section-padding">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag">Colección Boutique</span>
+          <h2 class="section-title">Nuestras Velas &amp; Detalles</h2>
+          <p class="section-subtitle">
+            Cada creación de DARVELÉ nace para convertir un día cualquiera en un recuerdo imborrable. Elige por ocasión o déjate guiar por tu aroma favorito.
+          </p>
+        </div>
+
+        <!-- Filtros clicables de categorías -->
+        <div class="catalog-controls fade-up">
+          <div id="categories-container" class="categories-scroll" role="tablist" aria-label="Filtrar por categoría">
+            <!-- Renderizado dinámicamente por app.js -->
+          </div>
+        </div>
+
+        <!-- Grid de productos -->
+        <div id="catalog-grid" class="products-grid">
+          <!-- Renderizado dinámicamente por app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         7. SECCIÓN "ARMA TU DETALLE" PASO A PASO
+         ====================================================================== -->
+    <section id="arma-tu-detalle" class="section-padding builder-section">
+      <div class="container">
+        <div class="section-header dark-mode fade-up">
+          <span class="section-tag">Atelier de Regalos</span>
+          <h2 class="section-title">Arma tu detalle único en 3 pasos</h2>
+          <p class="section-subtitle">
+            ¿Quieres sorprender a esa persona favorita con algo hecho solo para ella? Diseña aquí tu box a medida y nosotros lo preparamos a mano con sello dorado.
+          </p>
+        </div>
+
+        <form id="custom-builder-form" class="builder-wrapper fade-up">
+          <div class="builder-steps-grid">
+            <!-- PASO 1: Elige tu vela -->
+            <div class="builder-step-card">
+              <div class="step-number-badge"><span>1</span> Paso Uno</div>
+              <h3>Elige tu vela favorita</h3>
+              <div class="builder-options-list">
+                <div class="builder-radio-card selected" data-builder-candle data-name="Vela Lavanda Relajante (220g)" data-price="45000">
+                  <div class="builder-option-info">
+                    <strong>Lavanda Relajante</strong>
+                    <span>Calma profunda &amp; manzanilla</span>
+                  </div>
+                  <span class="builder-option-price">$45.000</span>
+                </div>
+
+                <div class="builder-radio-card" data-builder-candle data-name="Vela Vainilla & Canela (220g)" data-price="48000">
+                  <div class="builder-option-info">
+                    <strong>Vainilla &amp; Canela</strong>
+                    <span>Cálida, dulce y acogedora</span>
+                  </div>
+                  <span class="builder-option-price">$48.000</span>
+                </div>
+
+                <div class="builder-radio-card" data-builder-candle data-name="Vela Café de la Mañana (240g)" data-price="52000">
+                  <div class="builder-option-info">
+                    <strong>Café de la Mañana</strong>
+                    <span>Grano colombiano &amp; caramelo</span>
+                  </div>
+                  <span class="builder-option-price">$52.000</span>
+                </div>
+
+                <div class="builder-radio-card" data-builder-candle data-name="Vela Rosa Eterna Escultural" data-price="58000">
+                  <div class="builder-option-info">
+                    <strong>Rosa Eterna</strong>
+                    <span>Bouquet de rosas &amp; peonía</span>
+                  </div>
+                  <span class="builder-option-price">$58.000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PASO 2: Elige tu caja -->
+            <div class="builder-step-card">
+              <div class="step-number-badge"><span>2</span> Paso Dos</div>
+              <h3>Elige tu caja de lujo</h3>
+              <div class="builder-options-list">
+                <div class="builder-radio-card selected" data-builder-box data-name="Caja Rígida Marfil & Lazo Dorado" data-price="18000">
+                  <div class="builder-option-info">
+                    <strong>Caja Marfil &amp; Lazo Champaña</strong>
+                    <span>Incluye tarjeta en papel algodón</span>
+                  </div>
+                  <span class="builder-option-price">+$18.000</span>
+                </div>
+
+                <div class="builder-radio-card" data-builder-box data-name="Box Imperial Azul Noche & Fósforos" data-price="28000">
+                  <div class="builder-option-info">
+                    <strong>Box Imperial Azul Noche</strong>
+                    <span>Con frasco de fósforos largos y flores secas</span>
+                  </div>
+                  <span class="builder-option-price">+$28.000</span>
+                </div>
+
+                <div class="builder-radio-card" data-builder-box data-name="Cofre Edición Especial Aniversario" data-price="37000">
+                  <div class="builder-option-info">
+                    <strong>Cofre Edición Especial</strong>
+                    <span>Cinta satén, apagavelas dorado y ramillete</span>
+                  </div>
+                  <span class="builder-option-price">+$37.000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PASO 3: Escribe tu mensaje -->
+            <div class="builder-step-card">
+              <div class="step-number-badge"><span>3</span> Paso Tres</div>
+              <h3>Escribe tu mensaje</h3>
+              <p style="font-size:0.86rem; color:var(--text-light-muted); margin-bottom:1rem;">
+                Lo transcribimos con tipografía elegante en tarjeta perfumada y sellada en lacre dorado.
+              </p>
+
+              <label for="builder-recipient" style="display:block; font-size:0.82rem; color:var(--gold); margin-bottom:0.35rem;">¿Para quién es este detalle?</label>
+              <input type="text" id="builder-recipient" class="builder-dark-input" placeholder="Ej: Para mamá, Para mi amor, Para Camila...">
+
+              <label for="builder-message" style="display:block; font-size:0.82rem; color:var(--gold); margin-bottom:0.35rem;">Dedicatoria en la tarjeta *</label>
+              <textarea id="builder-message" rows="4" class="builder-dark-input" placeholder="Escribe aquí esas palabras que salen del alma..." required></textarea>
+            </div>
+          </div>
+
+          <div class="builder-summary-bar">
+            <div>
+              <span style="font-size:0.82rem; color:var(--gold); text-transform:uppercase; letter-spacing:0.1em;">Tu combinación seleccionada:</span>
+              <p id="builder-summary-text" style="font-size:1rem; color:var(--text-light);">Vela Lavanda Relajante (220g) + Caja Rígida Marfil &amp; Lazo Dorado</p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+              <div class="builder-total-price">
+                <span style="font-size:0.78rem; color:var(--text-light-muted);">Valor del detalle</span>
+                <strong id="builder-total-display">$63.000</strong>
+              </div>
+              <button type="submit" class="btn btn-gold">Agregar mi detalle al carrito ✨</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         8. SECCIÓN NOSOTROS
+         ====================================================================== -->
+    <section id="nosotros" class="section-padding">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-image-collage fade-up">
+            <img src="https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=1000&q=85" alt="Velas encendidas artesanales DARVELÉ" class="about-main-photo">
+            <div class="about-floating-card">
+              <strong>El arte del fuego lento</strong>
+              <p>Cada vela reposa 48 horas de curado artesanal para que su aroma abrace cada rincón de tu hogar.</p>
+            </div>
+          </div>
+
+          <div class="about-content fade-up">
+            <span class="section-tag">Nuestra Historia</span>
+            <h2 class="section-title">En DARVELÉ no vendemos cera, encendemos emociones</h2>
+            <p style="margin-bottom:1.1rem; color:var(--text-dark-muted);">
+              DARVELÉ nació en Colombia con una convicción sencilla pero profunda: los regalos más valiosos no son los que se guardan en un cajón, sino los que transforman la atmósfera de un hogar y nos hacen sentir cerca incluso a kilómetros de distancia.
+            </p>
+            <p style="margin-bottom:1.5rem; color:var(--text-dark-muted);">
+              Trabajamos exclusivamente con <strong>cera de soya 100% vegetal</strong>, pabilos ecológicos de algodón trenzado y esencias libres de ftalatos. Fundimos, perfumamos y empacamos cada pedido a mano para que cuando alguien abra una caja DARVELÉ, sienta que pensaste en cada detalle.
+            </p>
+
+            <div class="about-pillars">
+              <div class="about-pillar">
+                <strong>Cera Botánica Limpia</strong>
+                <span>Dura hasta el doble que la parafina tradicional y cuida el aire de tu familia.</span>
+              </div>
+              <div class="about-pillar">
+                <strong>Empaque de Joyería</strong>
+                <span>Lazos de satén, flores preservadas y tarjetas personalizadas listas para entregar.</span>
+              </div>
+            </div>
+
+            <a href="#tienda" class="btn btn-dark">Descubrir la colección</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         9. TESTIMONIOS
+         ====================================================================== -->
+    <section class="section-padding testimonials-section">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag">Voces Reales</span>
+          <h2 class="section-title">Lo que sienten quienes regalan DARVELÉ</h2>
+          <p class="section-subtitle">
+            Historias de amor, gratitud y cumpleaños celebrados en distintos rincones de Colombia.
+          </p>
+        </div>
+
+        <div class="testimonials-grid">
+          <article class="testimonial-card fade-up">
+            <div>
+              <div class="testimonial-stars" aria-label="5 estrellas">★★★★★</div>
+              <p class="testimonial-quote">
+                "Le envié el Box Amor Eterno a mi mamá en su cumpleaños y lloró de la emoción apenas abrió la caja. El aroma a rosas y champaña perfuma toda la sala incluso antes de prenderla. ¡Se nota el amor en cada detalle!"
+              </p>
+            </div>
+            <div class="testimonial-author">
+              <div class="author-avatar">V</div>
+              <div class="author-meta">
+                <strong>Valentina Restrepo</strong>
+                <span>Medellín, Antioquia</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="testimonial-card fade-up">
+            <div>
+              <div class="testimonial-stars" aria-label="5 estrellas">★★★★★</div>
+              <p class="testimonial-quote">
+                "Pedí la Vela Café de la Mañana para mi estudio y una personalizada para mi novia en nuestro aniversario. La presentación parece de marca europea de lujo y la atención por WhatsApp fue impecable."
+              </p>
+            </div>
+            <div class="testimonial-author">
+              <div class="author-avatar">S</div>
+              <div class="author-meta">
+                <strong>Santiago Morales</strong>
+                <span>Bogotá D.C.</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="testimonial-card fade-up">
+            <div>
+              <div class="testimonial-stars" aria-label="5 estrellas">★★★★★</div>
+              <p class="testimonial-quote">
+                "La Vela Lavanda Relajante se volvió mi ritual sagrado todas las noches. Dura muchísimo, no humea nada y el envase es tan lindo que decora mi mesa de noche. 100% recomendados."
+              </p>
+            </div>
+            <div class="testimonial-author">
+              <div class="author-avatar">M</div>
+              <div class="author-meta">
+                <strong>Mariana Cabal</strong>
+                <span>Cali, Valle del Cauca</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         10. SECCIÓN INSTAGRAM (@darvele_)
+         ====================================================================== -->
+    <section class="section-padding">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag">Comunidad de Luz</span>
+          <h2 class="section-title">Síguenos en Instagram <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" style="color:var(--terracotta);">@darvele_</a></h2>
+          <p class="section-subtitle">
+            Inspírate con nuestras entregas reales, nuevos lanzamientos y rituales para llenar tu espacio de buena energía.
+          </p>
+        </div>
+
+        <div class="ig-grid fade-up">
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="ig-item" aria-label="Ver en Instagram @darvele_">
+            <img src="https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=600&q=80" alt="Vela aromática DARVELÉ en Instagram" loading="lazy">
+            <div class="ig-overlay"><span>@darvele_ ✨</span></div>
+          </a>
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="ig-item" aria-label="Ver en Instagram @darvele_">
+            <img src="https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=600&q=80" alt="Ritual de luz DARVELÉ" loading="lazy">
+            <div class="ig-overlay"><span>@darvele_ ✨</span></div>
+          </a>
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="ig-item" aria-label="Ver en Instagram @darvele_">
+            <img src="https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=600&q=80" alt="Box de regalo personalizado DARVELÉ" loading="lazy">
+            <div class="ig-overlay"><span>@darvele_ ✨</span></div>
+          </a>
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="ig-item" aria-label="Ver en Instagram @darvele_">
+            <img src="https://images.unsplash.com/photo-1572726729207-a78d6feb18d7?auto=format&fit=crop&w=600&q=80" alt="Vela Café de la Mañana DARVELÉ" loading="lazy">
+            <div class="ig-overlay"><span>@darvele_ ✨</span></div>
+          </a>
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="ig-item" aria-label="Ver en Instagram @darvele_">
+            <img src="https://images.unsplash.com/photo-1596433809252-260c2745dfdd?auto=format&fit=crop&w=600&q=80" alt="Vela Rosa Eterna DARVELÉ" loading="lazy">
+            <div class="ig-overlay"><span>@darvele_ ✨</span></div>
+          </a>
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="ig-item" aria-label="Ver en Instagram @darvele_">
+            <img src="https://images.unsplash.com/photo-1608181831718-c9ffd8728e72?auto=format&fit=crop&w=600&q=80" alt="Vela Eucalipto Spa DARVELÉ" loading="lazy">
+            <div class="ig-overlay"><span>@darvele_ ✨</span></div>
+          </a>
+        </div>
+
+        <div style="text-align:center;">
+          <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" class="btn btn-gold">
+            Seguir en Instagram @darvele_
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       11. FOOTER
+       ======================================================================== -->
+  <footer id="contacto" class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="brand-logo" style="margin-bottom:1.1rem;">
+            <span class="brand-logo-title">DARVELÉ</span>
+            <span class="brand-logo-sub">VELAS &amp; DETALLES</span>
+          </div>
+          <p>
+            Velas artesanales en cera de soya y detalles de lujo para regalar momentos que perduran en la memoria.
+          </p>
+          <p style="color:var(--gold); font-weight:600; margin-top:1rem;">
+            ✨ Hecho con amor en Colombia
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explorar</h4>
+          <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#tienda">Catálogo de Velas</a></li>
+            <li><a href="#arma-tu-detalle">Arma tu Detalle</a></li>
+            <li><a href="#nosotros">Nuestra Historia</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Políticas &amp; Envíos</h4>
+          <ul>
+            <li>Envíos seguros a toda Colombia (2 a 4 días hábiles)</li>
+            <li>Envío GRATIS en compras desde $120.000 COP</li>
+            <li>Garantía de llegada en perfecto estado</li>
+            <li>Recordatorios y regalos corporativos a medida</li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contacto &amp; Horarios</h4>
+          <ul>
+            <li><strong>WhatsApp Ventas:</strong> <a href="https://wa.me/573057221113?text=Hola%20DARVEL%C3%89%2C%20quiero%20informaci%C3%B3n" target="_blank" rel="noopener noreferrer" style="color:var(--gold);">+57 305 7221113</a></li>
+            <li><strong>Instagram:</strong> <a href="https://instagram.com/darvele_" target="_blank" rel="noopener noreferrer" style="color:var(--gold);">@darvele_</a></li>
+            <li><strong>Horarios de atención:</strong><br>Lunes a Sábado: 8:30 a.m. – 7:00 p.m.<br>Domingos y festivos: Atención por WhatsApp</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 DARVELÉ — Todos los derechos reservados.</span>
+        <span>Hecho con amor en Colombia 🇨🇴</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       6. MODAL DE DETALLE DE PRODUCTO
+       ======================================================================== -->
+  <div id="product-modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="product-modal">
+      <button type="button" id="modal-close-btn" class="modal-close-btn" aria-label="Cerrar detalle">✕</button>
+
+      <div class="modal-grid">
+        <div class="modal-gallery">
+          <img id="modal-main-image" src="https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85" alt="Producto DARVELÉ" class="modal-main-img">
+          <div id="modal-thumbnails" class="modal-thumbs"></div>
+        </div>
+
+        <div class="modal-info">
+          <span id="modal-category" class="modal-category-label">Velas Aromáticas</span>
+          <h2 id="modal-title" class="modal-title">Nombre del Producto</h2>
+          <div id="modal-price" style="margin-bottom:1rem;"></div>
+          <p id="modal-description" style="color:var(--text-dark-muted); font-size:0.95rem;"></p>
+
+          <div class="modal-specs-grid">
+            <div class="spec-box">
+              <span>Aroma</span>
+              <strong id="modal-spec-aroma">Lavanda</strong>
+            </div>
+            <div class="spec-box">
+              <span>Duración</span>
+              <strong id="modal-spec-duration">35 horas</strong>
+            </div>
+            <div class="spec-box">
+              <span>Intensidad</span>
+              <strong id="modal-spec-intensity">Alta</strong>
+            </div>
+          </div>
+
+          <div class="modal-custom-box">
+            <h4>✨ Personaliza tu detalle (Opcional)</h4>
+            <div class="form-group">
+              <label for="modal-box-color">Color de caja &amp; lazo</label>
+              <select id="modal-box-color" class="form-control">
+                <option value="Marfil Imperial con Lazo Champaña">Marfil Imperial con Lazo Champaña</option>
+                <option value="Azul Noche con Lazo Dorado">Azul Noche (#0B0B1E) con Lazo Dorado</option>
+                <option value="Terracota Cálido con Lazo Marfil">Terracota Cálido con Lazo Marfil</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="modal-dedication">Agregar dedicatoria en etiqueta de la vela</label>
+              <input type="text" id="modal-dedication" class="form-control" placeholder="Ej: Feliz Cumpleaños Mamá / Con amor, Laura">
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="modal-card-message">Mensaje en la tarjeta de regalo</label>
+              <textarea id="modal-card-message" rows="2" class="form-control" placeholder="Escribe el mensaje que irá impreso dentro de la tarjeta..."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-buy-row">
+            <div class="qty-selector">
+              <button type="button" id="modal-qty-minus" class="qty-btn" aria-label="Menos">−</button>
+              <input type="number" id="modal-qty-input" class="qty-input" value="1" min="1" max="50" readonly>
+              <button type="button" id="modal-qty-plus" class="qty-btn" aria-label="Más">+</button>
+            </div>
+
+            <button type="button" id="modal-add-cart-btn" class="btn btn-gold" style="flex:1;">
+              Agregar al Carrito ✨
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       CARRITO LATERAL DESLIZABLE (DRAWER) Y CHECKOUT A WHATSAPP
+       ======================================================================== -->
+  <div id="cart-backdrop" class="cart-backdrop"></div>
+  <aside id="cart-drawer" class="cart-drawer" aria-label="Carrito de compras">
+    <div class="cart-header">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <h3>Tu Carrito DARVELÉ</h3>
+        <button type="button" id="clear-cart-btn" class="cart-clear-btn" style="display:none;">Vaciar carrito</button>
+      </div>
+      <button type="button" id="close-cart-btn" class="cart-close-btn" aria-label="Cerrar carrito">✕</button>
+    </div>
+
+    <div id="cart-shipping-banner" class="cart-shipping-banner">
+      Envío <strong>GRATIS</strong> en pedidos desde <strong>$120.000</strong>
+    </div>
+
+    <div class="cart-body" id="cart-scroll-body">
+      <div id="cart-items-list"></div>
+
+      <!-- Formulario de Checkout a WhatsApp -->
+      <div id="cart-checkout-section" class="cart-checkout-form">
+        <h4>Datos de envío &amp; regalo</h4>
+        <form id="whatsapp-checkout-form" novalidate>
+          <div class="form-group">
+            <label for="chk-nombre">Nombre completo *</label>
+            <input type="text" id="chk-nombre" class="form-control" placeholder="Ej: Carolina Gómez" required>
+            <span class="field-error-msg" id="err-chk-nombre">Ingresa tu nombre completo</span>
+          </div>
+          <div class="form-group">
+            <label for="chk-ciudad">Ciudad / Municipio *</label>
+            <input type="text" id="chk-ciudad" class="form-control" placeholder="Ej: Medellín, Bogotá, Cali..." required>
+            <span class="field-error-msg" id="err-chk-ciudad">Ingresa tu ciudad o municipio</span>
+          </div>
+          <div class="form-group">
+            <label for="chk-direccion">Dirección completa *</label>
+            <input type="text" id="chk-direccion" class="form-control" placeholder="Calle / Carrera / Apto / Barrio" required>
+            <span class="field-error-msg" id="err-chk-direccion">Ingresa tu dirección de entrega</span>
+          </div>
+          <div class="form-group">
+            <label for="chk-celular">Celular de contacto *</label>
+            <input type="tel" id="chk-celular" class="form-control" placeholder="Ej: 300 123 4567" required>
+            <span class="field-error-msg" id="err-chk-celular">Ingresa un número de celular válido</span>
+          </div>
+          <div class="form-group">
+            <label for="chk-regalo">¿Es para regalo? *</label>
+            <select id="chk-regalo" class="form-control" required>
+              <option value="Sí">Sí, empacar para regalo</option>
+              <option value="No">No, es para mí</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="chk-mensaje">Mensaje personalizado para la tarjeta</label>
+            <textarea id="chk-mensaje" rows="2" class="form-control" placeholder="Escribe aquí la dedicatoria si deseas incluir tarjeta..."></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-summary-line">
+        <span>Subtotal:</span>
+        <strong id="cart-subtotal-val">$0</strong>
+      </div>
+      <div class="cart-summary-line">
+        <span>Envío:</span>
+        <strong id="cart-shipping-val">$0</strong>
+      </div>
+      <div class="cart-summary-total">
+        <span>Total:</span>
+        <span id="cart-total-val">$0</span>
+      </div>
+      <button type="button" id="whatsapp-order-btn" class="btn-whatsapp-order">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+          <path d="M16.004 3.2c-7.072 0-12.8 5.728-12.8 12.8 0 2.256.592 4.464 1.712 6.416L3.2 28.8l6.56-1.712c1.888 1.024 4.032 1.568 6.24 1.568 7.072 0 12.8-5.728 12.8-12.8s-5.724-12.656-12.796-12.656zm7.488 18.144c-.32.896-1.856 1.712-2.56 1.824-.656.096-1.488.144-2.4-.144-.56-.176-1.264-.416-2.176-.816-3.824-1.648-6.32-5.504-6.512-5.76-.192-.256-1.552-2.064-1.552-3.936s.976-2.8 1.328-3.184c.352-.384.768-.48 1.024-.48.256 0 .512.016.736.016.24 0 .56-.096.864.656.32.768 1.088 2.656 1.184 2.848.096.192.16.416.032.672-.128.256-.192.416-.384.64-.192.224-.4.496-.576.672-.192.192-.384.4-.16.784.224.384.992 1.632 2.128 2.64 1.456 1.296 2.688 1.696 3.072 1.888.384.192.608.16.832-.096.224-.256.96-1.12 1.216-1.504.256-.384.512-.32.864-.192.352.128 2.24 1.056 2.624 1.248.384.192.64.288.736.448.096.16.096.928-.224 1.824z"/>
+        </svg>
+        <span id="whatsapp-order-btn-text">Pedir por WhatsApp - $0</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       12. BOTÓN FLOTANTE DE WHATSAPP
+       ======================================================================== -->
+  <a id="whatsapp-floating-btn"
+     href="https://wa.me/573057221113?text=Hola%20DARVEL%C3%89%2C%20quiero%20informaci%C3%B3n"
+     target="_blank"
+     rel="noopener noreferrer"
+     class="whatsapp-float"
+     aria-label="Chatear por WhatsApp con DARVELÉ">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor">
+      <path d="M16.004 3.2c-7.072 0-12.8 5.728-12.8 12.8 0 2.256.592 4.464 1.712 6.416L3.2 28.8l6.56-1.712c1.888 1.024 4.032 1.568 6.24 1.568 7.072 0 12.8-5.728 12.8-12.8s-5.724-12.656-12.796-12.656zm7.488 18.144c-.32.896-1.856 1.712-2.56 1.824-.656.096-1.488.144-2.4-.144-.56-.176-1.264-.416-2.176-.816-3.824-1.648-6.32-5.504-6.512-5.76-.192-.256-1.552-2.064-1.552-3.936s.976-2.8 1.328-3.184c.352-.384.768-.48 1.024-.48.256 0 .512.016.736.016.24 0 .56-.096.864.656.32.768 1.088 2.656 1.184 2.848.096.192.16.416.032.672-.128.256-.192.416-.384.64-.192.224-.4.496-.576.672-.192.192-.384.4-.16.784.224.384.992 1.632 2.128 2.64 1.456 1.296 2.688 1.696 3.072 1.888.384.192.608.16.832-.096.224-.256.96-1.12 1.216-1.504.256-.384.512-.32.864-.192.352.128 2.24 1.056 2.624 1.248.384.192.64.288.736.448.096.16.096.928-.224 1.824z"/>
+    </svg>
+  </a>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

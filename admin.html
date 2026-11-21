@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DARVELÉ | Gestión de Catálogo</title>
+  <meta name="description" content="Gestión de inventario, precios, fotos y respaldos JSON de DARVELÉ.">
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Google Fonts: Cormorant Garamond, Playfair Display & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-body">
+
+  <!-- ========================================================================
+       PANTALLA DE LOGIN ELEGANTE (CONFIG_ADMIN_PASSWORD = "darvele2026")
+       ======================================================================== -->
+  <section id="admin-login-screen" class="admin-login-screen">
+    <div class="admin-login-card">
+      <div class="brand-logo brand-logo-center" style="margin-bottom:1.35rem;">
+        <span class="brand-logo-title">DARVELÉ</span>
+        <span class="brand-logo-sub">VELAS &amp; DETALLES</span>
+      </div>
+      <span class="section-tag" style="color:var(--gold);">Acceso Privado</span>
+      <h1 class="serif" style="font-size:1.75rem; margin-bottom:0.5rem; color:var(--text-light);">Atelier DARVELÉ</h1>
+      <p style="font-size:0.9rem; color:var(--text-light-muted); margin-bottom:1.75rem;">
+        Ingresa la clave maestra para administrar el catálogo de velas y detalles.
+      </p>
+
+      <form id="admin-login-form">
+        <div class="form-group" style="text-align:left;">
+          <label for="admin-password-input" style="color:var(--gold);">Contraseña</label>
+          <input type="password" id="admin-password-input" class="builder-dark-input admin-input" placeholder="•••••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-gold admin-touch-btn" style="width:100%; margin-top:0.5rem;">
+          Ingresar ✨
+        </button>
+      </form>
+
+      <div style="margin-top:1.5rem;">
+        <a href="index.html" style="font-size:0.85rem; color:var(--text-light-muted);">← Volver a la tienda pública</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       APLICACIÓN DE ADMINISTRACIÓN (DASHBOARD + CRUD + JSON BACKUP)
+       ======================================================================== -->
+  <div id="admin-app-screen" style="display:none;">
+    <header class="admin-topbar">
+      <div class="container admin-header-inner">
+        <div class="brand-logo">
+          <span class="brand-logo-title">DARVELÉ</span>
+          <span class="brand-logo-sub">VELAS &amp; DETALLES</span>
+        </div>
+
+        <button type="button" id="admin-logout-btn" class="btn btn-gold admin-logout-btn">
+          Cerrar Sesión
+        </button>
+
+        <a href="index.html" class="btn btn-outline-white admin-store-btn">
+          Ver Tienda Pública ↗
+        </a>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Métricas del Dashboard (Grid 2x2 en móvil, 4 en escritorio) -->
+      <section class="admin-stats-grid" aria-label="Resumen de inventario">
+        <div class="admin-stat-card">
+          <span>Total Productos</span>
+          <strong id="stat-total-products">0</strong>
+        </div>
+        <div class="admin-stat-card">
+          <span>Productos Activos</span>
+          <strong id="stat-active-products">0</strong>
+        </div>
+        <div class="admin-stat-card">
+          <span>Productos Destacados</span>
+          <strong id="stat-featured-products">0</strong>
+        </div>
+        <div class="admin-stat-card">
+          <span>Valor Inventario</span>
+          <strong id="stat-inventory-value">$0</strong>
+        </div>
+      </section>
+
+      <!-- Layout Principal: Formulario CRUD + Listado con Buscador y Respaldo JSON -->
+      <section class="admin-layout">
+        <!-- Panel Izquierdo: Formulario Crear / Editar (100% ancho 1 columna en móvil) -->
+        <aside id="admin-form-panel" class="admin-panel-card">
+          <h2 id="form-title-heading" class="serif" style="font-size:1.45rem; margin-bottom:1.25rem; color:var(--bg-dark);">
+            Crear Nuevo Producto
+          </h2>
+
+          <form id="admin-product-form">
+            <input type="hidden" id="prod-id">
+
+            <div class="form-group">
+              <label for="prod-nombre">Nombre del Producto *</label>
+              <input type="text" id="prod-nombre" class="form-control admin-input" placeholder="Ej: Vela Lavanda Relajante" required>
+            </div>
+
+            <div class="admin-form-row">
+              <div class="form-group">
+                <label for="prod-precio">Precio COP *</label>
+                <input type="number" id="prod-precio" class="form-control admin-input" placeholder="45000" min="1000" required>
+              </div>
+              <div class="form-group">
+                <label for="prod-precio-oferta">Precio Oferta (Opcional)</label>
+                <input type="number" id="prod-precio-oferta" class="form-control admin-input" placeholder="40000" min="0">
+              </div>
+            </div>
+
+            <div class="admin-form-row">
+              <div class="form-group">
+                <label for="prod-categoria">Categoría *</label>
+                <select id="prod-categoria" class="form-control admin-input" required></select>
+              </div>
+              <div class="form-group">
+                <label for="prod-stock">Stock *</label>
+                <input type="number" id="prod-stock" class="form-control admin-input" value="15" min="0" required>
+              </div>
+            </div>
+
+            <div class="admin-form-row">
+              <div class="form-group">
+                <label for="prod-aroma">Aroma *</label>
+                <input type="text" id="prod-aroma" class="form-control admin-input" placeholder="Ej: Lavanda & Manzanilla" required>
+              </div>
+              <div class="form-group">
+                <label for="prod-duracion">Duración</label>
+                <input type="text" id="prod-duracion" class="form-control admin-input" placeholder="Ej: 35 horas" value="35 horas">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="prod-desc-corta">Descripción Corta *</label>
+              <input type="text" id="prod-desc-corta" class="form-control admin-input" placeholder="Frase emotiva para la tarjeta del catálogo" required>
+            </div>
+
+            <div class="form-group">
+              <label for="prod-desc-larga">Descripción Larga</label>
+              <textarea id="prod-desc-larga" rows="3" class="form-control admin-input" placeholder="Historia completa, notas olfativas y qué incluye..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="prod-imagen-file">Subir archivo de imagen (con Preview)</label>
+              <input type="file" id="prod-imagen-file" accept="image/*" class="form-control admin-input">
+            </div>
+
+            <div class="form-group">
+              <label for="prod-imagen-url">O pegar URL de imagen</label>
+              <input type="url" id="prod-imagen-url" class="form-control admin-input" placeholder="https://images.unsplash.com/...">
+              <div id="prod-image-preview" class="img-preview-box">
+                <span style="font-size:0.85rem; color:var(--text-dark-muted);">Vista previa de la imagen</span>
+              </div>
+            </div>
+
+            <div class="admin-checkbox-row">
+              <label class="admin-check-label">
+                <input type="checkbox" id="prod-personalizable" checked>
+                <span>Personalizable</span>
+              </label>
+              <label class="admin-check-label">
+                <input type="checkbox" id="prod-destacado">
+                <span>Destacado ★</span>
+              </label>
+            </div>
+
+            <div class="admin-form-submit-group">
+              <button type="submit" class="btn btn-gold admin-touch-btn">Guardar Producto</button>
+              <button type="button" id="admin-cancel-edit-btn" class="btn btn-outline-gold admin-touch-btn" style="display:none;">Cancelar Edición</button>
+            </div>
+          </form>
+        </aside>
+
+        <!-- Panel Derecho: Buscador, Filtros, Respaldo JSON y Tarjetas / Tabla -->
+        <div class="admin-panel-card">
+          <div class="admin-catalog-header">
+            <h2 class="serif" style="font-size:1.45rem;">Catálogo de Productos</h2>
+
+            <div class="admin-backup-btns">
+              <button type="button" id="admin-export-json-btn" class="btn btn-dark admin-touch-btn">
+                ⬇ Exportar JSON
+              </button>
+              <label class="btn btn-outline-gold admin-touch-btn" style="cursor:pointer;">
+                ⬆ Importar JSON
+                <input type="file" id="admin-import-json-input" accept=".json,application/json" style="display:none;">
+              </label>
+              <button type="button" id="admin-restore-defaults-btn" class="btn btn-outline-gold admin-touch-btn" title="Restaurar los 8 productos de fábrica">
+                Restaurar 8 base
+              </button>
+            </div>
+          </div>
+
+          <!-- Buscador y Filtro por categoría en Admin -->
+          <div class="admin-filters-bar">
+            <div class="form-group" style="margin-bottom:0;">
+              <input type="search" id="admin-search-input" class="form-control admin-input" placeholder="Buscar por nombre o aroma...">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <select id="admin-filter-category" class="form-control admin-input" aria-label="Filtrar por categoría"></select>
+            </div>
+          </div>
+
+          <!-- Lista en Tarjetas Verticales para Móvil -->
+          <div id="admin-products-mobile-cards" class="admin-mobile-cards-list">
+            <!-- Renderizado dinámicamente por admin.js -->
+          </div>
+
+          <!-- Tabla CRUD para Escritorio -->
+          <div class="admin-table-wrap admin-desktop-table">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-tbody">
+                <!-- Renderizado dinámicamente por admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Botón flotante circular dorado "Crear Producto" en móvil -->
+    <button type="button" id="admin-fab-create" class="admin-fab-create" aria-label="Crear Nuevo Producto" title="Crear Nuevo Producto">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+
+  <script src="js/products.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
