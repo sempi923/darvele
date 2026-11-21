@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * DARVELÉ — Panel de Administración & Gestión de Inventario (admin.js)
- * Arquitectura: Leonardo | Lógica CRUD & JSON: Donatello
+ * Arquitectura: Leonardo | Lógica CRUD, Persistencia v2 & JSON: Donatello
  * ============================================================================
  */
 
@@ -23,6 +23,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     initFormEvents();
     initFilterAndBackupEvents();
     renderAdminDashboard();
+
+    // Sincronización en tiempo real entre pestañas usando "darvele_productos_v2"
+    window.addEventListener("storage", (e) => {
+      if (!e.key || e.key === STORAGE_KEY_PRODUCTS) {
+        products = getStoredProducts();
+        renderAdminDashboard();
+      }
+    });
   });
 
   /* --------------------------------------------------------------------------
@@ -52,6 +60,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
           sessionStorage.setItem(SESSION_AUTH_KEY, "true");
           loginScreen.style.display = "none";
           appScreen.style.display = "block";
+          products = getStoredProducts();
           showToast("Bienvenido al Panel Maestro de DARVELÉ ✨");
           renderAdminDashboard();
         } else {
@@ -95,24 +104,72 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
   }
 
   /* --------------------------------------------------------------------------
-     DASHBOARD MÉTRICAS Y TABLA CRUD
+     COMPRESIÓN DE IMAGEN A BASE64 (Máx 800px con Canvas si supera 800KB)
+     -------------------------------------------------------------------------- */
+  function processImageFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("No se pudo leer el archivo de imagen."));
+      reader.onload = (ev) => {
+        const rawDataUrl = ev.target.result;
+        // Si pesa menos de 800KB y no necesitamos redimensionar, igual verificamos o comprimimos si supera 800KB
+        if (file.size <= 800 * 1024) {
+          resolve(rawDataUrl);
+          return;
+        }
+
+        const img = new Image();
+        img.onerror = () => resolve(rawDataUrl);
+        img.onload = () => {
+          const MAX_WIDTH = 800;
+          let targetWidth = img.width;
+          let targetHeight = img.height;
+
+          if (targetWidth > MAX_WIDTH) {
+            targetHeight = Math.round((targetHeight * MAX_WIDTH) / targetWidth);
+            targetWidth = MAX_WIDTH;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+          resolve(compressedDataUrl);
+        };
+        img.src = rawDataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* --------------------------------------------------------------------------
+     DASHBOARD MÉTRICAS Y TABLA / TARJETAS CRUD
      -------------------------------------------------------------------------- */
   function renderAdminDashboard() {
     const totalCount = products.length;
     const activeCount = products.filter((p) => p.activo !== false).length;
     const featuredCount = products.filter((p) => p.destacado === true).length;
     const totalInventoryValue = products.reduce((sum, p) => {
-      const price = p.precioOferta && Number(p.precioOferta) < Number(p.precio)
-        ? Number(p.precioOferta)
-        : Number(p.precio);
+      const price =
+        p.precioOferta && Number(p.precioOferta) < Number(p.precio)
+          ? Number(p.precioOferta)
+          : Number(p.precio);
       const stock = Number(p.stock) || 0;
       return sum + price * stock;
     }, 0);
 
-    document.getElementById("stat-total-products").textContent = totalCount;
-    document.getElementById("stat-active-products").textContent = activeCount;
-    document.getElementById("stat-featured-products").textContent = featuredCount;
-    document.getElementById("stat-inventory-value").textContent = formatCOP(totalInventoryValue);
+    const totalEl = document.getElementById("stat-total-products");
+    const activeEl = document.getElementById("stat-active-products");
+    const featEl = document.getElementById("stat-featured-products");
+    const valEl = document.getElementById("stat-inventory-value");
+
+    if (totalEl) totalEl.textContent = totalCount;
+    if (activeEl) activeEl.textContent = activeCount;
+    if (featEl) featEl.textContent = featuredCount;
+    if (valEl) valEl.textContent = formatCOP(totalInventoryValue);
 
     renderProductsTable();
   }
@@ -131,7 +188,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       const q = adminSearchQuery.trim().toLowerCase();
       const matchesQuery =
         !q ||
-        p.nombre.toLowerCase().includes(q) ||
+        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
         (p.aroma && p.aroma.toLowerCase().includes(q)) ||
         (p.categoria && p.categoria.toLowerCase().includes(q));
 
@@ -272,12 +329,118 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     });
 
     document.querySelectorAll("[data-delete]").forEach((btn) => {
-      btn.addEventListener("click", () => deleteProduct(btn.getAttribute("data-delete")));
+      btn.addEventListener("click", () => eliminarProducto(btn.getAttribute("data-delete")));
     });
   }
 
   /* --------------------------------------------------------------------------
-     CREAR / EDITAR / ELIMINAR PRODUCTOS
+     FUNCIONES OBLIGATORIAS CRUD: crearProducto, editarProducto, eliminarProducto
+     -------------------------------------------------------------------------- */
+  function crearProducto(productData) {
+    const uniqueId = "prod_" + Date.now();
+    const newProd = {
+      id: uniqueId,
+      nombre: productData.nombre,
+      precio: productData.precio,
+      precioOferta: productData.precioOferta,
+      categoria: productData.categoria,
+      tags: [productData.categoria],
+      aroma: productData.aroma,
+      descripcionCorta: productData.descripcionCorta,
+      descripcionLarga: productData.descripcionLarga,
+      duracion: productData.duracion,
+      intensidad: "Media / Alta",
+      stock: productData.stock,
+      imagen: productData.imagen,
+      galeria: [productData.imagen],
+      personalizable: productData.personalizable,
+      destacado: productData.destacado,
+      activo: true,
+      badge: productData.badge,
+      estrellas: 5
+    };
+
+    products.push(newProd);
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    showToast("Producto guardado ✅");
+    resetProductForm();
+    renderAdminDashboard();
+  }
+
+  function editarProducto(id, productData) {
+    const idx = products.findIndex((p) => String(p.id) === String(id));
+    if (idx === -1) {
+      showToast("No se encontró el producto a editar", "error");
+      return;
+    }
+
+    products[idx] = {
+      ...products[idx],
+      nombre: productData.nombre,
+      precio: productData.precio,
+      precioOferta: productData.precioOferta,
+      categoria: productData.categoria,
+      tags: [productData.categoria],
+      aroma: productData.aroma,
+      descripcionCorta: productData.descripcionCorta,
+      descripcionLarga: productData.descripcionLarga,
+      duracion: productData.duracion,
+      stock: productData.stock,
+      imagen: productData.imagen,
+      galeria: [productData.imagen],
+      personalizable: productData.personalizable,
+      destacado: productData.destacado,
+      badge: productData.badge
+    };
+
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    showToast("Producto guardado ✅");
+    resetProductForm();
+    renderAdminDashboard();
+  }
+
+  function eliminarProducto(id) {
+    const prod = products.find((p) => String(p.id) === String(id));
+    if (!prod) return;
+
+    const confirmed = window.confirm(`¿Estás seguro de eliminar "${prod.nombre}" del catálogo?`);
+    if (!confirmed) return;
+
+    products = products.filter((p) => String(p.id) !== String(id));
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    renderAdminDashboard();
+    showToast(`"${prod.nombre}" eliminado correctamente ✅`);
+  }
+
+  function toggleProductActive(id) {
+    const prod = products.find((p) => String(p.id) === String(id));
+    if (!prod) return;
+    prod.activo = prod.activo === false ? true : false;
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    renderAdminDashboard();
+    showToast(`"${prod.nombre}" ahora está ${prod.activo ? "Activo ✅" : "Inactivo"}`);
+  }
+
+  function toggleProductFeatured(id) {
+    const prod = products.find((p) => String(p.id) === String(id));
+    if (!prod) return;
+    prod.destacado = !prod.destacado;
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    renderAdminDashboard();
+    showToast(
+      prod.destacado
+        ? `"${prod.nombre}" marcado como Destacado ★`
+        : `"${prod.nombre}" removido de Destacados`
+    );
+  }
+
+  // Exponer funciones principales en window para pruebas o consola
+  window.crearProducto = crearProducto;
+  window.editarProducto = editarProducto;
+  window.eliminarProducto = eliminarProducto;
+
+  /* --------------------------------------------------------------------------
+     EVENTOS DEL FORMULARIO DE PRODUCTOS
      -------------------------------------------------------------------------- */
   function initFormEvents() {
     const form = document.getElementById("admin-product-form");
@@ -296,23 +459,28 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     }
 
     if (fileInput) {
-      fileInput.addEventListener("change", (e) => {
+      fileInput.addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          uploadedImageBase64 = ev.target.result;
+        try {
+          uploadedImageBase64 = await processImageFileToBase64(file);
           updatePreview(uploadedImageBase64);
-        };
-        reader.readAsDataURL(file);
+          if (file.size > 800 * 1024) {
+            showToast("Imagen optimizada automáticamente (máx 800px) para guardado rápido ✨");
+          }
+        } catch (err) {
+          showToast("No se pudo procesar la imagen seleccionada", "error");
+        }
       });
     }
 
     if (urlInput) {
       urlInput.addEventListener("input", () => {
-        if (urlInput.value.trim()) {
+        const cleanUrl = urlInput.value.trim();
+        if (cleanUrl) {
           uploadedImageBase64 = "";
-          updatePreview(urlInput.value.trim());
+          if (fileInput) fileInput.value = "";
+          updatePreview(cleanUrl);
         }
       });
     }
@@ -324,23 +492,24 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const editingId = document.getElementById("prod-id").value;
+        const editingId = document.getElementById("prod-id").value.trim();
         const nombre = document.getElementById("prod-nombre").value.trim();
         const precio = Number(document.getElementById("prod-precio").value) || 0;
         const precioOfertaRaw = document.getElementById("prod-precio-oferta").value;
         const precioOferta = precioOfertaRaw ? Number(precioOfertaRaw) : null;
         const categoria = document.getElementById("prod-categoria").value;
         const aroma = document.getElementById("prod-aroma").value.trim();
-        const descCorta = document.getElementById("prod-desc-corta").value.trim();
-        const descLarga = document.getElementById("prod-desc-larga").value.trim();
+        const descripcionCorta = document.getElementById("prod-desc-corta").value.trim();
+        const descripcionLarga = document.getElementById("prod-desc-larga").value.trim();
         const duracion = document.getElementById("prod-duracion").value.trim() || "35 horas";
         const stock = Number(document.getElementById("prod-stock").value) || 0;
         const personalizable = document.getElementById("prod-personalizable").checked;
         const destacado = document.getElementById("prod-destacado").checked;
 
+        const pastedUrl = urlInput ? urlInput.value.trim() : "";
         const finalImage =
           uploadedImageBase64 ||
-          urlInput.value.trim() ||
+          pastedUrl ||
           "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=85";
 
         if (!nombre || precio <= 0) {
@@ -355,63 +524,38 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
             ? "Más vendido"
             : "Nuevo";
 
-        if (editingId) {
-          const idx = products.findIndex((p) => p.id === editingId);
-          if (idx !== -1) {
-            products[idx] = {
-              ...products[idx],
-              nombre,
-              precio,
-              precioOferta,
-              categoria,
-              aroma,
-              descripcionCorta: descCorta,
-              descripcionLarga: descLarga,
-              duracion,
-              stock,
-              imagen: finalImage,
-              galeria: [finalImage],
-              personalizable,
-              destacado,
-              badge
-            };
-          }
-          showToast(`Producto "${nombre}" actualizado con éxito ✨`);
-        } else {
-          const newProd = {
-            id: "prod-" + Date.now(),
-            nombre,
-            precio,
-            precioOferta,
-            categoria,
-            tags: [categoria],
-            aroma,
-            descripcionCorta: descCorta,
-            descripcionLarga: descLarga,
-            duracion,
-            intensidad: "Media / Alta",
-            stock,
-            imagen: finalImage,
-            galeria: [finalImage],
-            personalizable,
-            destacado,
-            activo: true,
-            badge,
-            estrellas: 5
-          };
-          products.unshift(newProd);
-          showToast(`Producto "${nombre}" creado en el catálogo ✨`);
-        }
+        const payload = {
+          nombre,
+          precio,
+          precioOferta,
+          categoria,
+          aroma,
+          descripcionCorta,
+          descripcionLarga,
+          duracion,
+          stock,
+          imagen: finalImage,
+          personalizable,
+          destacado,
+          badge
+        };
 
-        saveStoredProducts(products);
-        resetProductForm();
-        renderAdminDashboard();
+        try {
+          if (editingId) {
+            editarProducto(editingId, payload);
+          } else {
+            crearProducto(payload);
+          }
+        } catch (err) {
+          console.error("Error guardando en localStorage:", err);
+          showToast("No se pudo guardar: memoria de localStorage llena. Comprime la imagen o usa una URL.", "error");
+        }
       });
     }
   }
 
   function loadProductIntoForm(id) {
-    const prod = products.find((p) => p.id === id);
+    const prod = products.find((p) => String(p.id) === String(id));
     if (!prod) return;
 
     document.getElementById("form-title-heading").textContent = "Editar Producto";
@@ -425,11 +569,16 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     document.getElementById("prod-desc-larga").value = prod.descripcionLarga || "";
     document.getElementById("prod-duracion").value = prod.duracion || "35 horas";
     document.getElementById("prod-stock").value = prod.stock ?? 10;
-    document.getElementById("prod-imagen-url").value = prod.imagen.startsWith("data:") ? "" : prod.imagen;
+
+    const isBase64 = typeof prod.imagen === "string" && prod.imagen.startsWith("data:");
+    document.getElementById("prod-imagen-url").value = isBase64 ? "" : prod.imagen || "";
+    const fileInput = document.getElementById("prod-imagen-file");
+    if (fileInput) fileInput.value = "";
+
     document.getElementById("prod-personalizable").checked = Boolean(prod.personalizable);
     document.getElementById("prod-destacado").checked = Boolean(prod.destacado);
 
-    uploadedImageBase64 = prod.imagen.startsWith("data:") ? prod.imagen : "";
+    uploadedImageBase64 = isBase64 ? prod.imagen : "";
     const previewBox = document.getElementById("prod-image-preview");
     if (previewBox) {
       previewBox.innerHTML = `<img src="${prod.imagen}" alt="${prod.nombre}">`;
@@ -452,39 +601,8 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     }
   }
 
-  function toggleProductActive(id) {
-    const prod = products.find((p) => p.id === id);
-    if (!prod) return;
-    prod.activo = prod.activo === false ? true : false;
-    saveStoredProducts(products);
-    renderAdminDashboard();
-    showToast(`"${prod.nombre}" ahora está ${prod.activo ? "Activo" : "Inactivo"}`);
-  }
-
-  function toggleProductFeatured(id) {
-    const prod = products.find((p) => p.id === id);
-    if (!prod) return;
-    prod.destacado = !prod.destacado;
-    saveStoredProducts(products);
-    renderAdminDashboard();
-    showToast(
-      prod.destacado
-        ? `"${prod.nombre}" marcado como Destacado ★`
-        : `"${prod.nombre}" removido de Destacados`
-    );
-  }
-
-  function deleteProduct(id) {
-    const prod = products.find((p) => p.id === id);
-    if (!prod) return;
-    products = products.filter((p) => p.id !== id);
-    saveStoredProducts(products);
-    renderAdminDashboard();
-    showToast(`"${prod.nombre}" fue eliminado del inventario`);
-  }
-
   /* --------------------------------------------------------------------------
-     FILTROS Y EXPORTAR / IMPORTAR JSON
+     FILTROS Y EXPORTAR / IMPORTAR JSON (darvele_backup.json)
      -------------------------------------------------------------------------- */
   function initFilterAndBackupEvents() {
     const searchInput = document.getElementById("admin-search-input");
@@ -513,14 +631,13 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        const dateTag = new Date().toISOString().slice(0, 10);
         a.href = url;
-        a.download = `darvele_inventario_${dateTag}.json`;
+        a.download = "darvele_backup.json";
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        showToast("Respaldo JSON descargado correctamente ✨");
+        showToast("Respaldo darvele_backup.json descargado ✅");
       });
     }
 
@@ -533,15 +650,17 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
           try {
             const imported = JSON.parse(ev.target.result);
             if (!Array.isArray(imported)) {
-              showToast("El archivo JSON no contiene una lista válida de productos", "error");
+              showToast("El archivo JSON no contiene un array válido de productos", "error");
               return;
             }
             products = imported;
-            saveStoredProducts(products);
-            renderAdminDashboard();
-            showToast(`¡${products.length} productos importados con éxito! ✨`);
+            localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+            showToast(`¡${products.length} productos importados! Recargando... ✅`);
+            setTimeout(() => {
+              window.location.reload();
+            }, 600);
           } catch (err) {
-            showToast("Error al leer el archivo JSON. Verifica el formato.", "error");
+            showToast("Error al leer el archivo JSON. Verifica que no esté corrupto.", "error");
           }
         };
         reader.readAsText(file);
@@ -551,10 +670,15 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
 
     if (restoreDefaultsBtn) {
       restoreDefaultsBtn.addEventListener("click", () => {
+        const confirmed = window.confirm(
+          "¿Estás seguro de restablecer los 8 productos de ejemplo? Esto reemplazará tu catálogo actual."
+        );
+        if (!confirmed) return;
+
         products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-        saveStoredProducts(products);
+        localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
         renderAdminDashboard();
-        showToast("Catálogo restaurado con los 8 productos originales de DARVELÉ ✨");
+        showToast("Catálogo restablecido con los 8 productos de ejemplo ✅");
       });
     }
 
@@ -571,7 +695,6 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         }, 350);
       });
 
-      // Ocultar el botón flotante mientras el usuario está viendo el formulario para que nunca lo tape
       if ("IntersectionObserver" in window) {
         const fabObserver = new IntersectionObserver(
           (entries) => {

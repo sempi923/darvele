@@ -26,8 +26,13 @@
   };
 
   /* --------------------------------------------------------------------------
-     INICIALIZACIÓN
+     INICIALIZACIÓN Y SINCRONIZACIÓN ENTRE PESTAÑAS
      -------------------------------------------------------------------------- */
+  function refreshStoreFromStorage() {
+    allProducts = getStoredProducts().filter((p) => p.activo !== false);
+    renderCatalog();
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     allProducts = getStoredProducts().filter((p) => p.activo !== false);
     loadCartFromStorage();
@@ -40,6 +45,24 @@
     initCartEvents();
     initScrollAnimations();
     initFloatingWhatsApp();
+
+    // Sincronización automática cuando cambia localStorage en admin.html u otra pestaña
+    window.addEventListener("storage", (e) => {
+      if (!e.key || e.key === STORAGE_KEY_PRODUCTS) {
+        refreshStoreFromStorage();
+      }
+      if (!e.key || e.key === STORAGE_KEY_CART) {
+        loadCartFromStorage();
+        updateCartUI();
+      }
+    });
+
+    // Sincronizar también al regresar a la pestaña de la tienda
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        refreshStoreFromStorage();
+      }
+    });
   });
 
   /* --------------------------------------------------------------------------

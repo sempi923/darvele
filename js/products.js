@@ -7,7 +7,8 @@
 
 const CONFIG_WHATSAPP = "573057221113";
 const CONFIG_INSTAGRAM = "https://instagram.com/darvele_";
-const STORAGE_KEY_PRODUCTS = "darvele_productos";
+const STORAGE_KEY_PRODUCTS = "darvele_productos_v2";
+const LEGACY_STORAGE_KEY_PRODUCTS = "darvele_productos";
 const STORAGE_KEY_CART = "darvele_carrito";
 const FREE_SHIPPING_THRESHOLD = 120000;
 const STANDARD_SHIPPING_COST = 12000;
@@ -30,7 +31,7 @@ const DARVELE_CATEGORIES = [
  */
 const DEFAULT_PRODUCTS = [
   {
-    id: "prod-1",
+    id: "prod_1700000000001",
     nombre: "Vela Lavanda Relajante",
     precio: 45000,
     precioOferta: null,
@@ -54,7 +55,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-2",
+    id: "prod_1700000000002",
     nombre: "Vela Vainilla & Canela",
     precio: 48000,
     precioOferta: 44000,
@@ -78,7 +79,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-3",
+    id: "prod_1700000000003",
     nombre: "Vela Café de la Mañana",
     precio: 52000,
     precioOferta: null,
@@ -101,7 +102,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-4",
+    id: "prod_1700000000004",
     nombre: "Vela Rosa Eterna",
     precio: 58000,
     precioOferta: null,
@@ -124,7 +125,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-5",
+    id: "prod_1700000000005",
     nombre: "Box Amor Eterno",
     precio: 85000,
     precioOferta: null,
@@ -148,7 +149,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-6",
+    id: "prod_1700000000006",
     nombre: "Box Cumpleaños Feliz",
     precio: 95000,
     precioOferta: 89000,
@@ -171,7 +172,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-7",
+    id: "prod_1700000000007",
     nombre: "Vela Decorativa Luna",
     precio: 65000,
     precioOferta: null,
@@ -194,7 +195,7 @@ const DEFAULT_PRODUCTS = [
     estrellas: 5
   },
   {
-    id: "prod-8",
+    id: "prod_1700000000008",
     nombre: "Vela Eucalipto Spa",
     precio: 49000,
     precioOferta: null,
@@ -230,36 +231,69 @@ function formatCOP(amount) {
 }
 
 /**
- * Obtiene la lista de productos desde localStorage o inicializa con los 8 por defecto
+ * Obtiene la lista de productos desde localStorage ("darvele_productos_v2").
+ * - SI EXISTE: usa esos productos tal cual y NUNCA los sobrescribe con los de ejemplo.
+ * - SI NO EXISTE (primera vez): migra de "darvele_productos" si había datos previos, o carga los 8 productos de ejemplo y los guarda inmediatamente en "darvele_productos_v2".
+ * - En caso de JSON corrupto: muestra alerta mediante showToast y NO borra el localStorage.
  */
 function getStoredProducts() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
-      return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+  const raw = localStorage.getItem(STORAGE_KEY_PRODUCTS);
+
+  if (raw !== null) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      showToast("⚠️ El formato de productos en localStorage no es válido. Usa Exportar/Importar JSON.", "error");
+      return [];
+    } catch (err) {
+      console.error("Error leyendo darvele_productos_v2 de localStorage:", err);
+      showToast("⚠️ Datos corruptos en localStorage. No se borraron tus datos por seguridad.", "error");
+      return [];
     }
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(DEFAULT_PRODUCTS));
-      return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-    }
-    return parsed;
-  } catch (err) {
-    console.error("Error leyendo productos de localStorage:", err);
-    return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
   }
+
+  // Migración suave si el usuario tenía productos guardados en la clave anterior "darvele_productos"
+  const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY_PRODUCTS);
+  if (legacyRaw !== null) {
+    try {
+      const legacyParsed = JSON.parse(legacyRaw);
+      if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
+        localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(legacyParsed));
+        return legacyParsed;
+      }
+    } catch (e) {
+      // Si la clave vieja falló, continuar con los 8 por defecto
+    }
+  }
+
+  // Primera vez real: cargar los 8 productos de ejemplo y guardarlos inmediatamente en "darvele_productos_v2"
+  const initialProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+  try {
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(initialProducts));
+  } catch (err) {
+    console.error("No se pudo inicializar darvele_productos_v2:", err);
+  }
+  return initialProducts;
 }
 
 /**
- * Guarda la lista de productos en localStorage
+ * Guarda la lista de productos en localStorage ("darvele_productos_v2")
  */
 function saveStoredProducts(products) {
   try {
+    if (!Array.isArray(products)) {
+      throw new Error("El catálogo debe ser un array de productos.");
+    }
     localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
     return true;
   } catch (err) {
     console.error("Error guardando productos en localStorage:", err);
+    showToast(
+      "⚠️ No se pudo guardar en localStorage (posible imagen muy pesada o memoria llena). Intenta con una imagen más liviana o URL.",
+      "error"
+    );
     return false;
   }
 }
