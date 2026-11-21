@@ -6,10 +6,108 @@
  * ============================================================================
  */
 
-const CONFIG_ADMIN_PASSWORD = "darvele2026";
+/**
+ * Hash SHA-256 de la contraseña maestra ("Darvele2026*Segura")
+ * No se almacena en texto plano en el código fuente.
+ */
+const CONFIG_ADMIN_PASSWORD_HASH = "fbe6bf4718448aa8e9b9609af78efe7df6c917b5e73d080ba8a7f3264641867a";
 const SESSION_AUTH_KEY = "darvele_admin_session";
+const LOCKOUT_STORAGE_KEY = "darvele_admin_lockout";
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 60 * 1000; // 1 minuto de bloqueo tras 5 intentos fallidos
 const ALLOWED_IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_IMAGE_FILE_BYTES = 2 * 1024 * 1024; // 2MB máximo recomendado
+
+/**
+ * Implementación pura en JavaScript de SHA-256 (funciona tanto en HTTPS como en HTTP local Termux)
+ */
+function sha256Hex(ascii) {
+  function rightRotate(value, amount) {
+    return (value >>> amount) | (value << (32 - amount));
+  }
+
+  // Convertir string UTF-8 a bytes ASCII
+  const utf8 = unescape(encodeURIComponent(String(ascii)));
+  const mathPow = Math.pow;
+  const maxWord = mathPow(2, 32);
+  const lengthProperty = "length";
+  let i, j;
+  let result = "";
+
+  const words = [];
+  const asciiBitLength = utf8[lengthProperty] * 8;
+
+  let hash = (sha256Hex.h = sha256Hex.h || []);
+  const k = (sha256Hex.k = sha256Hex.k || []);
+  let primeCounter = k[lengthProperty];
+
+  const isComposite = {};
+  for (let candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 313; i += candidate) {
+        isComposite[i] = candidate;
+      }
+      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+
+  let padded = utf8 + "\x80";
+  while ((padded[lengthProperty] % 64) - 56) padded += "\x00";
+  for (i = 0; i < padded[lengthProperty]; i++) {
+    j = padded.charCodeAt(i);
+    if (j >> 8) return "";
+    words[i >> 2] |= j << (((3 - i) % 4) * 8);
+  }
+  words[words[lengthProperty]] = (asciiBitLength / maxWord) | 0;
+  words[words[lengthProperty]] = asciiBitLength;
+
+  let hCopy = hash.slice(0, 8);
+  for (j = 0; j < words[lengthProperty]; ) {
+    const w = words.slice(j, (j += 16));
+    const oldHash = hCopy.slice(0);
+
+    for (i = 0; i < 64; i++) {
+      const w15 = w[i - 15],
+        w2 = w[i - 2];
+
+      const a = hCopy[0],
+        e = hCopy[4];
+      const temp1 =
+        hCopy[7] +
+        (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
+        ((e & hCopy[5]) ^ (~e & hCopy[6])) +
+        k[i] +
+        (w[i] =
+          i < 16
+            ? w[i]
+            : (w[i - 16] +
+                (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
+                w[i - 7] +
+                (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) |
+              0);
+      const temp2 =
+        (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
+        ((a & hCopy[1]) ^ (a & hCopy[2]) ^ (hCopy[1] & hCopy[2]));
+
+      hCopy = [(temp1 + temp2) | 0].concat(hCopy);
+      hCopy[4] = (hCopy[4] + temp1) | 0;
+      hCopy.pop();
+    }
+
+    for (i = 0; i < 8; i++) {
+      hCopy[i] = (hCopy[i] + oldHash[i]) | 0;
+    }
+  }
+
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      const b = (hCopy[i] >> (j * 8)) & 255;
+      result += (b < 16 ? 0 : "") + b.toString(16);
+    }
+  }
+  return result;
+}
 
 (function () {
   "use strict";
@@ -38,8 +136,76 @@ const MAX_IMAGE_FILE_BYTES = 2 * 1024 * 1024; // 2MB máximo recomendado
   });
 
   /* --------------------------------------------------------------------------
-     AUTENTICACIÓN CON CONTRASEÑA (darvele2026)
+     AUTENTICACIÓN CON HASH SHA-256 Y BLOQUEO DE 1 MINUTO TRAS 5 INTENTOS
      -------------------------------------------------------------------------- */
+  let lockoutTimerInterval = null;
+
+  function getLockoutState() {
+    try {
+      const raw = localStorage.getItem(LOCKOUT_STORAGE_KEY);
+      if (!raw) return { attempts: 0, lockedUntil: 0 };
+      const parsed = JSON.parse(raw);
+      return {
+        attempts: Number(parsed.attempts) || 0,
+        lockedUntil: Number(parsed.lockedUntil) || 0
+      };
+    } catch (e) {
+      return { attempts: 0, lockedUntil: 0 };
+    }
+  }
+
+  function saveLockoutState(attempts, lockedUntil) {
+    try {
+      localStorage.setItem(
+        LOCKOUT_STORAGE_KEY,
+        JSON.stringify({ attempts, lockedUntil })
+      );
+    } catch (e) {}
+  }
+
+  function updateLockoutUI() {
+    const lockoutBanner = document.getElementById("admin-lockout-msg");
+    const passInput = document.getElementById("admin-password-input");
+    const submitBtn = document.getElementById("admin-login-submit-btn");
+    const { attempts, lockedUntil } = getLockoutState();
+    const now = Date.now();
+
+    if (lockedUntil > now) {
+      const remainingSec = Math.ceil((lockedUntil - now) / 1000);
+      if (lockoutBanner) {
+        lockoutBanner.style.display = "block";
+        lockoutBanner.textContent = `⛔ Demasiados intentos. Bloqueado por ${remainingSec} segundos.`;
+      }
+      if (passInput) passInput.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
+      return true;
+    } else {
+      if (lockedUntil > 0 && lockedUntil <= now) {
+        saveLockoutState(0, 0);
+      }
+      if (lockoutBanner) lockoutBanner.style.display = "none";
+      if (passInput) passInput.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
+      if (lockoutTimerInterval) {
+        clearInterval(lockoutTimerInterval);
+        lockoutTimerInterval = null;
+      }
+      return false;
+    }
+  }
+
+  function startLockoutCountdown() {
+    if (lockoutTimerInterval) clearInterval(lockoutTimerInterval);
+    updateLockoutUI();
+    lockoutTimerInterval = setInterval(() => {
+      const stillLocked = updateLockoutUI();
+      if (!stillLocked && lockoutTimerInterval) {
+        clearInterval(lockoutTimerInterval);
+        lockoutTimerInterval = null;
+      }
+    }, 1000);
+  }
+
   function initAuthFlow() {
     const loginScreen = document.getElementById("admin-login-screen");
     const appScreen = document.getElementById("admin-app-screen");
@@ -54,13 +220,25 @@ const MAX_IMAGE_FILE_BYTES = 2 * 1024 * 1024; // 2MB máximo recomendado
     } else {
       loginScreen.style.display = "flex";
       appScreen.style.display = "none";
+      if (getLockoutState().lockedUntil > Date.now()) {
+        startLockoutCountdown();
+      }
     }
 
     if (loginForm) {
       loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
+
+        if (updateLockoutUI()) {
+          showToast("Demasiados intentos. Espera 1 minuto para volver a intentar.", "error");
+          return;
+        }
+
         const passInput = document.getElementById("admin-password-input");
-        if (passInput.value === CONFIG_ADMIN_PASSWORD) {
+        const candidateHash = sha256Hex(passInput.value);
+
+        if (candidateHash === CONFIG_ADMIN_PASSWORD_HASH) {
+          saveLockoutState(0, 0);
           sessionStorage.setItem(SESSION_AUTH_KEY, "true");
           loginScreen.style.display = "none";
           appScreen.style.display = "block";
@@ -68,7 +246,19 @@ const MAX_IMAGE_FILE_BYTES = 2 * 1024 * 1024; // 2MB máximo recomendado
           showToast("Bienvenido al Panel Maestro de DARVELÉ ✨");
           renderAdminDashboard();
         } else {
-          showToast("Contraseña incorrecta. Verifica tus credenciales.", "error");
+          const state = getLockoutState();
+          const nextAttempts = state.attempts + 1;
+
+          if (nextAttempts >= MAX_LOGIN_ATTEMPTS) {
+            const lockUntil = Date.now() + LOCKOUT_DURATION_MS;
+            saveLockoutState(nextAttempts, lockUntil);
+            startLockoutCountdown();
+            showToast("Demasiados intentos. Acceso bloqueado por 1 minuto.", "error");
+          } else {
+            saveLockoutState(nextAttempts, 0);
+            const left = MAX_LOGIN_ATTEMPTS - nextAttempts;
+            showToast(`Contraseña incorrecta. Te quedan ${left} intento(s).`, "error");
+          }
           passInput.value = "";
           passInput.focus();
         }

@@ -13,9 +13,10 @@
   --bg-light-alt: #EDE5D8;
   --gold: #D9B98A;
   --gold-light: #E8CFA8;
-  --gold-dark: #B8945F;
+  --gold-dark: #8C6B2E;
+  --gold-text-on-light: #6B4F1A;
   --terracotta: #C98A6B;
-  --terracotta-dark: #B27355;
+  --terracotta-dark: #8C6B2E;
   --text-light: #FFFFFF;
   --text-light-muted: rgba(255, 255, 255, 0.72);
   --text-dark: #1A1A1A;
@@ -110,8 +111,8 @@ button {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.22em;
-  color: var(--terracotta);
-  font-weight: 600;
+  color: #6B4F1A;
+  font-weight: 700;
   margin-bottom: 0.75rem;
 }
 
@@ -214,6 +215,33 @@ button {
 .fade-up.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* --- AVISO SIN CONEXIÓN (OFFLINE) & BARRA SUPERIOR DORADA --- */
+.offline-network-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #8B261D;
+  color: #FFFFFF;
+  text-align: center;
+  padding: 0.65rem 16px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  z-index: 2100;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.top-craft-announcement {
+  background: linear-gradient(90deg, #C9A671 0%, #D9B98A 50%, #E8CFA8 100%);
+  color: #0B0B1E;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid rgba(11, 11, 30, 0.15);
 }
 
 /* --- 1. HEADER FIJO --- */
@@ -428,13 +456,13 @@ button {
 /* Mobile Nav Drawer */
 .mobile-nav-drawer {
   position: fixed;
-  top: 112px;
+  top: 142px;
   left: 0;
   width: 100%;
   background: var(--bg-dark);
   border-bottom: 1px solid var(--border-gold);
   padding: 1.25rem 16px;
-  transform: translateY(-140%);
+  transform: translateY(-150%);
   opacity: 0;
   pointer-events: none;
   transition: var(--transition);
@@ -474,7 +502,7 @@ button {
   color: var(--text-light);
   display: flex;
   align-items: center;
-  padding: 145px 0 80px;
+  padding: 170px 0 80px;
   overflow: hidden;
 }
 
@@ -650,9 +678,157 @@ button {
   color: var(--text-light-muted);
 }
 
-/* --- 4. CATEGORÍAS & FILTROS --- */
+/* --- 4. HISTORIAS DESTACADAS, CATEGORÍAS & FILTRO POR COLOR --- */
+.ig-stories-chips-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.15rem;
+  overflow-x: auto;
+  padding: 0.35rem 0 1.65rem;
+  scrollbar-width: none;
+}
+
+.ig-stories-chips-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.ig-story-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ig-story-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg-light-card);
+  border: 2.5px solid var(--gold-dark);
+  box-shadow: 0 0 0 3px rgba(217, 185, 138, 0.28), var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65rem;
+  transition: var(--transition);
+}
+
+.dark-stories .ig-story-ring {
+  background: var(--bg-dark-card);
+  border-color: var(--gold);
+}
+
+.ig-story-chip:hover .ig-story-ring,
+.ig-story-chip.active .ig-story-ring {
+  transform: translateY(-4px) scale(1.06);
+  background: var(--bg-dark);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(217, 185, 138, 0.45);
+}
+
+.ig-story-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6B4F1A;
+  letter-spacing: 0.02em;
+}
+
+.dark-stories .ig-story-label {
+  color: var(--gold);
+}
+
 .catalog-controls {
-  margin-bottom: 2.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.catalog-controls-top-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-color-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-light-card);
+  border: 1.5px solid #8C6B2E;
+  color: #6B4F1A;
+  font-size: 0.86rem;
+  font-weight: 700;
+  align-self: flex-start;
+  transition: var(--transition);
+}
+
+.btn-color-filter-toggle:hover,
+.btn-color-filter-toggle.active {
+  background: var(--bg-dark);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.active-color-filter-badge {
+  background: var(--gold);
+  color: var(--bg-dark);
+  padding: 0.1rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.catalog-color-filter-bar {
+  margin-top: 0.85rem;
+  padding: 1rem 1.15rem;
+  background: var(--bg-light-card);
+  border: 1px solid rgba(140, 107, 46, 0.35);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.color-filter-pills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.color-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-light);
+  color: var(--text-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.color-filter-pill:hover {
+  border-color: #8C6B2E;
+}
+
+.color-filter-pill.active {
+  background: var(--bg-dark);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.color-filter-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(26, 26, 26, 0.3);
+  flex-shrink: 0;
 }
 
 .categories-scroll {
@@ -727,7 +903,8 @@ button {
   position: relative;
   aspect-ratio: 4 / 4.2;
   overflow: hidden;
-  background: #EAE2D6;
+  background-color: #F5EFE6;
+  background-image: radial-gradient(circle at center, rgba(217, 185, 138, 0.22) 0%, #F5EFE6 75%);
   cursor: pointer;
 }
 
@@ -796,10 +973,10 @@ button {
 
 .product-aroma {
   font-size: 0.78rem;
-  color: var(--terracotta);
-  font-weight: 600;
+  color: #6B4F1A;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .product-stars {
@@ -831,7 +1008,147 @@ button {
   display: flex;
   align-items: baseline;
   gap: 0.65rem;
+  margin-bottom: 0.6rem;
+}
+
+.wholesale-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: linear-gradient(90deg, rgba(217, 185, 138, 0.28) 0%, rgba(217, 185, 138, 0.14) 100%);
+  border: 1px solid #8C6B2E;
+  color: #6B4F1A;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.32rem 0.75rem;
+  border-radius: 8px;
   margin-bottom: 0.85rem;
+}
+
+.badge-on-order {
+  background: #6B4F1A;
+  color: #FFFFFF;
+  border: 1px solid var(--gold);
+}
+
+.btn-card-order-wa {
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  background: #1E8449;
+  color: #FFFFFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid #1E8449;
+}
+
+.btn-card-order-wa:hover {
+  background: #145A32;
+}
+
+.builder-qty-wholesale-row {
+  margin-top: 1.15rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(217, 185, 138, 0.25);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.wholesale-applied-badge {
+  background: rgba(37, 211, 102, 0.16);
+  border: 1px solid #25D366;
+  color: #1E8449;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+}
+
+.builder-section .wholesale-applied-badge {
+  color: #69F0AE;
+}
+
+.btn-share-product-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6B4F1A;
+  background: var(--bg-light);
+  border: 1px solid #8C6B2E;
+  padding: 0.5rem 0.95rem;
+  border-radius: 20px;
+  transition: var(--transition);
+}
+
+.btn-share-product-link:hover {
+  background: var(--bg-dark);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.cart-discount-line {
+  color: #1E8449 !important;
+  font-weight: 700;
+}
+
+.cart-footer-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-copy-order-text {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: var(--bg-light);
+  border: 1.5px solid #8C6B2E;
+  color: #6B4F1A;
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: var(--transition);
+}
+
+.btn-copy-order-text:hover {
+  background: var(--bg-dark);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.admin-security-demo-notice {
+  margin-top: 1.15rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(217, 185, 138, 0.12);
+  border: 1px dashed var(--gold);
+  color: var(--gold-light);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.admin-lockout-banner {
+  margin: 0.5rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(200, 75, 75, 0.22);
+  border: 1px solid #C84B4B;
+  color: #FFD2D2;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 /* --- SELECTOR DE COLORES EN TARJETA Y MODAL DE PRODUCTO --- */

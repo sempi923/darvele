@@ -36,12 +36,17 @@
           <label for="admin-password-input" style="color:var(--gold);">Contraseña</label>
           <input type="password" id="admin-password-input" class="builder-dark-input admin-input" placeholder="•••••••••••" required>
         </div>
-        <button type="submit" class="btn btn-gold admin-touch-btn" style="width:100%; margin-top:0.5rem;">
+        <div id="admin-lockout-msg" class="admin-lockout-banner" style="display:none;"></div>
+        <button type="submit" id="admin-login-submit-btn" class="btn btn-gold admin-touch-btn" style="width:100%; margin-top:0.5rem;">
           Ingresar ✨
         </button>
       </form>
 
-      <div style="margin-top:1.5rem;">
+      <div class="admin-security-demo-notice">
+        🔒 Esta contraseña es solo para demo, no uses la misma de tu correo o redes.
+      </div>
+
+      <div style="margin-top:1.25rem;">
         <a href="index.html" style="font-size:0.85rem; color:var(--text-light-muted);">← Volver a la tienda pública</a>
       </div>
     </div>
