@@ -1,13 +1,15 @@
 /**
  * ============================================================================
  * DARVELÉ — Panel de Administración & Gestión de Inventario (admin.js)
- * Especialidad: Velas Decorativas en Figura & Detalles Hechos a Mano
+ * Especialidad: Velas Decorativas en Figura & Selector Múltiple de 15 Colores
  * Arquitectura: Leonardo | Lógica CRUD, Persistencia v2 & JSON: Donatello
  * ============================================================================
  */
 
 const CONFIG_ADMIN_PASSWORD = "darvele2026";
 const SESSION_AUTH_KEY = "darvele_admin_session";
+const ALLOWED_IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_IMAGE_FILE_BYTES = 2 * 1024 * 1024; // 2MB máximo recomendado
 
 (function () {
   "use strict";
@@ -21,6 +23,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     products = getStoredProducts();
     initAuthFlow();
     populateCategorySelects();
+    renderAdminColorPicker(["Blanco", "Marfil / Crema", "Dorado"]);
     initFormEvents();
     initFilterAndBackupEvents();
     renderAdminDashboard();
@@ -83,7 +86,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
   }
 
   /* --------------------------------------------------------------------------
-     SELECTS DE CATEGORÍAS
+     SELECTS DE CATEGORÍAS Y SELECTOR MÚLTIPLE DE 15 COLORES
      -------------------------------------------------------------------------- */
   function populateCategorySelects() {
     const formCatSelect = document.getElementById("prod-categoria");
@@ -104,11 +107,50 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     }
   }
 
+  function renderAdminColorPicker(selectedColors = []) {
+    const grid = document.getElementById("admin-candle-colors-grid");
+    if (!grid) return;
+
+    const selectedSet = new Set(Array.isArray(selectedColors) ? selectedColors : []);
+
+    grid.innerHTML = DARVELE_CANDLE_COLORS.map((c) => {
+      const isChecked = selectedSet.has(c.nombre);
+      return `
+        <label class="admin-color-chip ${isChecked ? "checked" : ""}">
+          <input type="checkbox" name="prod-color-item" value="${escapeHTML(c.nombre)}" ${isChecked ? "checked" : ""}>
+          <span class="admin-color-circle" style="background-color:${c.hex};"></span>
+          <span>${escapeHTML(c.nombre)}</span>
+        </label>
+      `;
+    }).join("");
+
+    grid.querySelectorAll('input[name="prod-color-item"]').forEach((chk) => {
+      chk.addEventListener("change", () => {
+        const label = chk.closest(".admin-color-chip");
+        if (label) label.classList.toggle("checked", chk.checked);
+      });
+    });
+  }
+
+  function getSelectedAdminColors() {
+    const checkboxes = document.querySelectorAll('input[name="prod-color-item"]:checked');
+    return Array.from(checkboxes).map((chk) => chk.value);
+  }
+
   /* --------------------------------------------------------------------------
-     COMPRESIÓN DE IMAGEN A BASE64 (Máx 800px con Canvas si supera 800KB)
+     VALIDACIÓN Y COMPRESIÓN DE IMAGEN A BASE64 (.jpg/.png/.webp, máx 2MB -> 800px)
      -------------------------------------------------------------------------- */
   function processImageFileToBase64(file) {
     return new Promise((resolve, reject) => {
+      if (!ALLOWED_IMAGE_MIMES.includes(file.type)) {
+        reject(new Error("Formato no permitido. Sube únicamente imágenes .JPG, .PNG o .WEBP"));
+        return;
+      }
+      if (file.size > MAX_IMAGE_FILE_BYTES) {
+        reject(new Error("La imagen supera los 2MB permitidos. Elige una foto más liviana."));
+        return;
+      }
+
       const reader = new FileReader();
       reader.onerror = () => reject(new Error("No se pudo leer el archivo de imagen."));
       reader.onload = (ev) => {
@@ -182,6 +224,17 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     return p.incluye || p.duracion || "Caja, cinta y tarjeta";
   }
 
+  function renderColorDotsMini(colores) {
+    if (!Array.isArray(colores) || colores.length === 0) return "";
+    const dots = colores
+      .map((cName) => {
+        const hex = getCandleColorHex(cName);
+        return `<span title="${escapeHTML(cName)}" style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${hex}; border:1px solid rgba(26,26,26,0.3);"></span>`;
+      })
+      .join("");
+    return `<div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:4px;">${dots}</div>`;
+  }
+
   function renderProductsTable() {
     const tbody = document.getElementById("admin-products-tbody");
     const mobileCardsContainer = document.getElementById("admin-products-mobile-cards");
@@ -196,12 +249,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       const q = adminSearchQuery.trim().toLowerCase();
       const figuraText = getFigura(p).toLowerCase();
       const incluyeText = getIncluye(p).toLowerCase();
+      const coloresText = Array.isArray(p.colores) ? p.colores.join(" ").toLowerCase() : "";
 
       const matchesQuery =
         !q ||
         (p.nombre && p.nombre.toLowerCase().includes(q)) ||
         figuraText.includes(q) ||
         incluyeText.includes(q) ||
+        coloresText.includes(q) ||
         (p.categoria && p.categoria.toLowerCase().includes(q));
 
       return matchesCat && matchesQuery;
@@ -247,6 +302,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
                   <div>
                     <strong style="display:block; color:var(--bg-dark);">${safeNombre}</strong>
                     <span style="font-size:0.78rem; color:var(--text-dark-muted);">${safeFigura} • Incluye: ${safeIncluye}</span>
+                    ${renderColorDotsMini(p.colores)}
                   </div>
                 </div>
               </td>
@@ -309,8 +365,9 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
                 <span class="admin-prod-card-cat">${safeCategoria}</span>
                 <h3 class="admin-prod-card-title">${safeNombre}</h3>
                 <div class="admin-prod-card-meta">${safeFigura} • Incluye: ${safeIncluye}</div>
+                ${renderColorDotsMini(p.colores)}
 
-                <div class="admin-prod-card-price-stock">
+                <div class="admin-prod-card-price-stock" style="margin-top:0.65rem;">
                   <div>
                     <strong style="font-size:1.15rem; color:var(--bg-dark);">${formatCOP(hasOffer ? p.precioOferta : p.precio)}</strong>
                     ${hasOffer ? `<span style="font-size:0.82rem; text-decoration:line-through; color:#888; margin-left:6px;">${formatCOP(p.precio)}</span>` : ""}
@@ -339,7 +396,6 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         .join("");
     }
 
-    // Bind botones en tabla y tarjetas móviles
     document.querySelectorAll("[data-edit]").forEach((btn) => {
       btn.addEventListener("click", () => loadProductIntoForm(btn.getAttribute("data-edit")));
     });
@@ -379,6 +435,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       figura: productData.figura,
       incluye: productData.incluye,
       acabado: "Pintada a mano",
+      colores: Array.isArray(productData.colores) ? productData.colores : [],
       descripcionCorta: productData.descripcionCorta,
       descripcionLarga: productData.descripcionLarga || productData.descripcionCorta,
       stock: productData.stock,
@@ -414,6 +471,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
       tags: [productData.categoria],
       figura: productData.figura,
       incluye: productData.incluye,
+      colores: Array.isArray(productData.colores) ? productData.colores : [],
       descripcionCorta: productData.descripcionCorta,
       descripcionLarga: productData.descripcionLarga || productData.descripcionCorta,
       stock: productData.stock,
@@ -465,7 +523,6 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     );
   }
 
-  // Exponer funciones principales en window para pruebas o consola
   window.crearProducto = crearProducto;
   window.editarProducto = editarProducto;
   window.eliminarProducto = eliminarProducto;
@@ -479,6 +536,20 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     const urlInput = document.getElementById("prod-imagen-url");
     const previewBox = document.getElementById("prod-image-preview");
     const cancelBtn = document.getElementById("admin-cancel-edit-btn");
+    const selectAllColorsBtn = document.getElementById("admin-colors-select-all");
+    const clearAllColorsBtn = document.getElementById("admin-colors-clear-all");
+
+    if (selectAllColorsBtn) {
+      selectAllColorsBtn.addEventListener("click", () => {
+        renderAdminColorPicker(DARVELE_CANDLE_COLORS.map((c) => c.nombre));
+      });
+    }
+
+    if (clearAllColorsBtn) {
+      clearAllColorsBtn.addEventListener("click", () => {
+        renderAdminColorPicker([]);
+      });
+    }
 
     function updatePreview(src) {
       if (!previewBox) return;
@@ -500,7 +571,8 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
             showToast("Imagen optimizada automáticamente (máx 800px) para guardado rápido ✨");
           }
         } catch (err) {
-          showToast("No se pudo procesar la imagen seleccionada", "error");
+          fileInput.value = "";
+          showToast(err.message || "No se pudo procesar la imagen seleccionada", "error");
         }
       });
     }
@@ -533,9 +605,10 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
         const incluye = document.getElementById("prod-incluye").value.trim() || "Caja, cinta y tarjeta personalizada";
         const descripcionCorta = document.getElementById("prod-desc-corta").value.trim();
         const descripcionLarga = document.getElementById("prod-desc-larga").value.trim();
-        const stock = Number(document.getElementById("prod-stock").value) || 0;
+        const stock = Math.max(0, Number(document.getElementById("prod-stock").value) || 0);
         const personalizable = document.getElementById("prod-personalizable").checked;
         const destacado = document.getElementById("prod-destacado").checked;
+        const colores = getSelectedAdminColors();
 
         const pastedUrl = urlInput ? urlInput.value.trim() : "";
         const finalImage =
@@ -562,6 +635,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
           categoria,
           figura,
           incluye,
+          colores,
           descripcionCorta,
           descripcionLarga,
           stock,
@@ -601,6 +675,8 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     document.getElementById("prod-desc-larga").value = prod.descripcionLarga || "";
     document.getElementById("prod-stock").value = prod.stock ?? 10;
 
+    renderAdminColorPicker(Array.isArray(prod.colores) ? prod.colores : []);
+
     const isBase64 = typeof prod.imagen === "string" && prod.imagen.startsWith("data:");
     document.getElementById("prod-imagen-url").value = isBase64 ? "" : prod.imagen || "";
     const fileInput = document.getElementById("prod-imagen-file");
@@ -626,6 +702,7 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
     document.getElementById("form-title-heading").textContent = "Crear Nuevo Producto";
     document.getElementById("admin-cancel-edit-btn").style.display = "none";
     uploadedImageBase64 = "";
+    renderAdminColorPicker(["Blanco", "Marfil / Crema", "Dorado"]);
     const previewBox = document.getElementById("prod-image-preview");
     if (previewBox) {
       previewBox.innerHTML = `<span style="font-size:0.82rem; color:var(--text-dark-muted);">Vista previa de la imagen</span>`;
@@ -689,13 +766,14 @@ const SESSION_AUTH_KEY = "darvele_admin_session";
               .map((item, idx) => ({
                 id: item.id ? String(item.id) : `prod_${Date.now()}_${idx}`,
                 nombre: String(item.nombre).trim(),
-                precio: Math.max(0, Number(item.precio) || 0),
+                precio: Math.max(1000, Number(item.precio) || 18000),
                 precioOferta: item.precioOferta ? Math.max(0, Number(item.precioOferta)) : null,
                 categoria: item.categoria || "Velas Decorativas",
                 tags: Array.isArray(item.tags) ? item.tags : [item.categoria || "Velas Decorativas"],
                 figura: item.figura ? String(item.figura) : item.categoria || "Figura decorativa",
                 incluye: item.incluye ? String(item.incluye) : "Caja, cinta y tarjeta personalizada",
                 acabado: item.acabado ? String(item.acabado) : "Pintada a mano",
+                colores: Array.isArray(item.colores) ? item.colores.map(String) : [],
                 descripcionCorta: item.descripcionCorta ? String(item.descripcionCorta) : "",
                 descripcionLarga: item.descripcionLarga ? String(item.descripcionLarga) : "",
                 stock: Math.max(0, Number(item.stock) || 0),

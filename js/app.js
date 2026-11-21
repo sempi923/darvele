@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * DARVELÉ — Lógica Principal de la Tienda Pública (app.js)
- * Especialidad: Velas Decorativas en Figura & Detalles Hechos a Mano
+ * Especialidad: Velas Decorativas en Figura & Configurador 4 Pasos
  * Arquitectura: Leonardo | Programación: Donatello | UI: Raphael | Copy: Michelangelo
  * ============================================================================
  */
@@ -15,15 +15,28 @@
   let searchQuery = "";
   let cart = [];
   let currentModalProduct = null;
+  let currentModalSelectedColor = "";
 
-  // Estado del constructor "Arma tu detalle"
+  //Mapa de color seleccionado por tarjeta en el catálogo: { [productId]: "Rosa" }
+  const cardSelectedColorMap = {};
+
+  // Estado del configurador "Arma tu detalle en 4 pasos 💛"
   const builderState = {
-    candleName: "Vela Graduada Niña (Toga & Birrete Dorado)",
-    candlePrice: 25000,
-    boxName: "Caja Transparente con Cinta & Tarjeta (Incluida)",
+    currentStep: 1,
+    typeName: "Vela Figura Graduación",
+    typeShort: "Vela Graduación",
+    typePrice: 25000,
+    customIdea: "",
+    primaryColor: "Rosa",
+    secondaryColor: "Dorado",
+    boxName: "Caja Transparente con Cinta",
     boxPrice: 0,
-    recipient: "",
-    message: ""
+    hasCard: true,
+    cardPrice: 2000,
+    cardRecipient: "",
+    cardMessage: "",
+    clientName: "",
+    clientCity: ""
   };
 
   /* --------------------------------------------------------------------------
@@ -58,7 +71,6 @@
       }
     });
 
-    // Sincronizar también al regresar a la pestaña de la tienda
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         refreshStoreFromStorage();
@@ -67,7 +79,7 @@
   });
 
   /* --------------------------------------------------------------------------
-     CATEGORÍAS Y CATÁLOGO
+     CATEGORÍAS Y CATÁLOGO CON COLORES DISPONIBLES
      -------------------------------------------------------------------------- */
   function renderCategoryPills() {
     const container = document.getElementById("categories-container");
@@ -95,6 +107,11 @@
     return prod.incluye || prod.duracion || "Caja, cinta y tarjeta personalizada";
   }
 
+  function getProductColors(prod) {
+    if (!prod || !Array.isArray(prod.colores)) return [];
+    return prod.colores.filter((c) => typeof c === "string" && c.trim().length > 0);
+  }
+
   function getFilteredProducts() {
     return allProducts.filter((prod) => {
       const matchesCategory =
@@ -106,12 +123,14 @@
       const q = searchQuery.trim().toLowerCase();
       const figuraText = getProductFigura(prod).toLowerCase();
       const incluyeText = getProductIncluye(prod).toLowerCase();
+      const colorsText = getProductColors(prod).join(" ").toLowerCase();
 
       const matchesSearch =
         !q ||
         (prod.nombre && prod.nombre.toLowerCase().includes(q)) ||
         figuraText.includes(q) ||
         incluyeText.includes(q) ||
+        colorsText.includes(q) ||
         (prod.categoria && prod.categoria.toLowerCase().includes(q)) ||
         (prod.descripcionCorta && prod.descripcionCorta.toLowerCase().includes(q));
 
@@ -171,6 +190,31 @@
         const safeDescCorta = escapeHTML(prod.descripcionCorta || "");
         const safeBadgeText = escapeHTML(badgeText);
 
+        // Colores disponibles de la vela (debajo del precio)
+        const prodColors = getProductColors(prod);
+        if (prodColors.length > 0 && !cardSelectedColorMap[prod.id]) {
+          cardSelectedColorMap[prod.id] = prodColors[0];
+        }
+        const selectedColor = cardSelectedColorMap[prod.id] || "";
+
+        const colorsHtml =
+          prodColors.length > 0
+            ? `
+              <div class="product-colors-wrap" data-color-group="${safeId}">
+                <span class="product-colors-label">Colores disponibles: <strong data-color-label="${safeId}">${escapeHTML(selectedColor)}</strong></span>
+                <div class="product-color-dots">
+                  ${prodColors
+                    .map((cName) => {
+                      const hex = getCandleColorHex(cName);
+                      const isSel = cName === selectedColor ? "selected" : "";
+                      return `<button type="button" class="color-dot-btn ${isSel}" style="background-color:${hex};" data-card-color-pick="${safeId}" data-color-name="${escapeHTML(cName)}" title="${escapeHTML(cName)}" aria-label="Color ${escapeHTML(cName)}"></button>`;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            `
+            : "";
+
         return `
           <article class="product-card fade-up visible" data-id="${safeId}">
             <div class="product-image-wrap" data-action="detail" data-id="${safeId}">
@@ -190,6 +234,7 @@
                 <span class="price-current">${formatCOP(effectivePrice)}</span>
                 ${hasOffer ? `<span class="price-old">${formatCOP(prod.precio)}</span>` : ""}
               </div>
+              ${colorsHtml}
               <div class="product-actions">
                 <button type="button" class="btn-card-detail" data-action="detail" data-id="${safeId}">Ver detalle</button>
                 <button type="button" class="btn-card-add" data-action="quick-add" data-id="${safeId}">
@@ -202,7 +247,25 @@
       })
       .join("");
 
-    // Eventos en tarjetas
+    // Eventos de selección de color en la tarjeta del producto
+    grid.querySelectorAll("[data-card-color-pick]").forEach((dotBtn) => {
+      dotBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const prodId = dotBtn.getAttribute("data-card-color-pick");
+        const colorName = dotBtn.getAttribute("data-color-name");
+        cardSelectedColorMap[prodId] = colorName;
+
+        const group = grid.querySelector(`[data-color-group="${prodId}"]`);
+        if (group) {
+          group.querySelectorAll(".color-dot-btn").forEach((b) => b.classList.remove("selected"));
+          dotBtn.classList.add("selected");
+          const labelStrong = group.querySelector(`[data-color-label="${prodId}"]`);
+          if (labelStrong) labelStrong.textContent = colorName;
+        }
+      });
+    });
+
+    // Eventos en tarjetas (Ver detalle y Agregar)
     grid.querySelectorAll("[data-action='detail']").forEach((el) => {
       el.addEventListener("click", () => {
         const id = el.getAttribute("data-id");
@@ -215,7 +278,9 @@
         const id = btn.getAttribute("data-id");
         const prod = allProducts.find((p) => String(p.id) === String(id));
         if (prod) {
-          addToCart(prod, 1, null);
+          const chosenColor = cardSelectedColorMap[prod.id] || (getProductColors(prod)[0] || "");
+          const colorNote = chosenColor ? `Color: ${chosenColor}` : null;
+          addToCart(prod, 1, colorNote, chosenColor);
         }
       });
     });
@@ -253,7 +318,7 @@
   }
 
   /* --------------------------------------------------------------------------
-     MODAL DE DETALLE DE PRODUCTO
+     MODAL DE DETALLE DE PRODUCTO (CON CIRCULITOS DE COLOR)
      -------------------------------------------------------------------------- */
   function openProductModal(productId) {
     const prod = allProducts.find((p) => String(p.id) === String(productId));
@@ -282,6 +347,41 @@
     if (specFiguraEl) specFiguraEl.textContent = getProductFigura(prod);
     if (specIncluyeEl) specIncluyeEl.textContent = getProductIncluye(prod);
     if (specAcabadoEl) specAcabadoEl.textContent = prod.acabado || "Pintada a mano";
+
+    // Renderizar circulitos de colores disponibles en el modal
+    const modalColorsSection = document.getElementById("modal-colors-section");
+    const modalColorsSwatches = document.getElementById("modal-colors-swatches");
+    const modalColorNameEl = document.getElementById("modal-selected-color-name");
+    const prodColors = getProductColors(prod);
+
+    if (prodColors.length > 0 && modalColorsSection && modalColorsSwatches) {
+      currentModalSelectedColor = cardSelectedColorMap[prod.id] || prodColors[0];
+      modalColorsSection.style.display = "block";
+      if (modalColorNameEl) modalColorNameEl.textContent = currentModalSelectedColor;
+
+      modalColorsSwatches.innerHTML = prodColors
+        .map((cName) => {
+          const hex = getCandleColorHex(cName);
+          const isSel = cName === currentModalSelectedColor ? "selected" : "";
+          return `<button type="button" class="color-dot-btn ${isSel}" style="background-color:${hex};" data-modal-color="${escapeHTML(cName)}" title="${escapeHTML(cName)}" aria-label="Color ${escapeHTML(cName)}"></button>`;
+        })
+        .join("");
+
+      modalColorsSwatches.querySelectorAll("[data-modal-color]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chosen = btn.getAttribute("data-modal-color");
+          currentModalSelectedColor = chosen;
+          cardSelectedColorMap[prod.id] = chosen;
+          if (modalColorNameEl) modalColorNameEl.textContent = chosen;
+          modalColorsSwatches.querySelectorAll(".color-dot-btn").forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          renderCatalog();
+        });
+      });
+    } else if (modalColorsSection) {
+      currentModalSelectedColor = "";
+      modalColorsSection.style.display = "none";
+    }
 
     // Galería de imágenes
     const mainImg = document.getElementById("modal-main-image");
@@ -363,44 +463,174 @@
         const dedication = document.getElementById("modal-dedication").value.trim();
 
         const customDetails = [];
+        if (currentModalSelectedColor) customDetails.push(`Color: ${currentModalSelectedColor}`);
         if (boxColor) customDetails.push(`Empaque: ${boxColor}`);
         if (dedication) customDetails.push(`Personalización: "${dedication}"`);
         if (cardMsg) customDetails.push(`Tarjeta: "${cardMsg}"`);
 
-        addToCart(currentModalProduct, qty, customDetails.join(" | "));
+        addToCart(currentModalProduct, qty, customDetails.join(" | "), currentModalSelectedColor);
         closeProductModal();
       });
     }
   }
 
   /* --------------------------------------------------------------------------
-     SECCIÓN 7: "ARMA TU DETALLE" PASO A PASO
+     SECCIÓN 7: CONFIGURADOR "ARMA TU DETALLE EN 4 PASOS 💛"
      -------------------------------------------------------------------------- */
   function initBuilderSection() {
-    const candleCards = document.querySelectorAll("[data-builder-candle]");
-    const boxCards = document.querySelectorAll("[data-builder-box]");
-    const totalEl = document.getElementById("builder-total-display");
-    const summaryTextEl = document.getElementById("builder-summary-text");
     const form = document.getElementById("custom-builder-form");
+    if (!form) return;
 
-    function updateBuilderDisplay() {
-      const total = builderState.candlePrice + builderState.boxPrice;
-      if (totalEl) totalEl.textContent = formatCOP(total);
-      if (summaryTextEl) {
-        summaryTextEl.textContent = `${builderState.candleName} + ${builderState.boxName}`;
+    const stepPanels = document.querySelectorAll("[data-step-panel]");
+    const stepToggles = document.querySelectorAll("[data-step-toggle]");
+    const stepTabs = document.querySelectorAll("[data-goto-step]");
+    const nextStepBtns = document.querySelectorAll("[data-next-step]");
+    const prevStepBtns = document.querySelectorAll("[data-prev-step]");
+    const progressLabel = document.getElementById("builder-progress-label");
+    const progressStepName = document.getElementById("builder-progress-step-name");
+    const progressFill = document.getElementById("builder-progress-fill");
+
+    const stepNames = {
+      1: "1. Tipo de Vela",
+      2: "2. Color de la Vela",
+      3: "3. Empaque",
+      4: "4. Tarjeta Personalizada"
+    };
+
+    function goToBuilderStep(stepNum) {
+      const n = Math.min(4, Math.max(1, Number(stepNum) || 1));
+      builderState.currentStep = n;
+
+      stepPanels.forEach((panel) => {
+        const pStep = Number(panel.getAttribute("data-step-panel"));
+        panel.classList.toggle("open", pStep === n);
+      });
+
+      stepTabs.forEach((tab) => {
+        const tStep = Number(tab.getAttribute("data-goto-step"));
+        tab.classList.toggle("active", tStep === n);
+      });
+
+      if (progressLabel) progressLabel.textContent = `Paso ${n} de 4`;
+      if (progressStepName) progressStepName.textContent = stepNames[n] || "";
+      if (progressFill) progressFill.style.width = `${n * 25}%`;
+    }
+
+    stepToggles.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetStep = Number(btn.getAttribute("data-step-toggle"));
+        goToBuilderStep(targetStep);
+      });
+    });
+
+    stepTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const targetStep = Number(tab.getAttribute("data-goto-step"));
+        goToBuilderStep(targetStep);
+      });
+    });
+
+    nextStepBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const next = Number(btn.getAttribute("data-next-step"));
+        goToBuilderStep(next);
+      });
+    });
+
+    prevStepBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const prev = Number(btn.getAttribute("data-prev-step"));
+        goToBuilderStep(prev);
+      });
+    });
+
+    // Renderizar los 15 colores oficiales en Paso 2 (Principal y Secundario)
+    const primaryColorsContainer = document.getElementById("builder-primary-colors");
+    const secondaryColorsContainer = document.getElementById("builder-secondary-colors");
+    const clearSecBtn = document.getElementById("builder-clear-secondary-color");
+
+    function renderBuilderColorSwatches() {
+      if (primaryColorsContainer) {
+        primaryColorsContainer.innerHTML = DARVELE_CANDLE_COLORS.map((c) => {
+          const isSel = c.nombre === builderState.primaryColor ? "selected" : "";
+          return `
+            <button type="button" class="builder-swatch-btn ${isSel}" data-primary-color="${escapeHTML(c.nombre)}">
+              <span class="builder-swatch-circle" style="background-color:${c.hex};"></span>
+              <span>${escapeHTML(c.nombre)}</span>
+            </button>
+          `;
+        }).join("");
+
+        primaryColorsContainer.querySelectorAll("[data-primary-color]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            builderState.primaryColor = btn.getAttribute("data-primary-color");
+            renderBuilderColorSwatches();
+            updateBuilderDisplay();
+          });
+        });
+      }
+
+      if (secondaryColorsContainer) {
+        secondaryColorsContainer.innerHTML = DARVELE_CANDLE_COLORS.map((c) => {
+          const isSel = c.nombre === builderState.secondaryColor ? "selected" : "";
+          return `
+            <button type="button" class="builder-swatch-btn ${isSel}" data-secondary-color="${escapeHTML(c.nombre)}">
+              <span class="builder-swatch-circle" style="background-color:${c.hex};"></span>
+              <span>${escapeHTML(c.nombre)}</span>
+            </button>
+          `;
+        }).join("");
+
+        secondaryColorsContainer.querySelectorAll("[data-secondary-color]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const clicked = btn.getAttribute("data-secondary-color");
+            builderState.secondaryColor = builderState.secondaryColor === clicked ? "" : clicked;
+            renderBuilderColorSwatches();
+            updateBuilderDisplay();
+          });
+        });
       }
     }
 
-    candleCards.forEach((card) => {
+    if (clearSecBtn) {
+      clearSecBtn.addEventListener("click", () => {
+        builderState.secondaryColor = "";
+        renderBuilderColorSwatches();
+        updateBuilderDisplay();
+      });
+    }
+
+    // Paso 1: Tarjetas de Tipo de Vela
+    const typeCards = document.querySelectorAll("[data-builder-type]");
+    const customIdeaWrap = document.getElementById("builder-custom-idea-wrap");
+    const customIdeaInput = document.getElementById("builder-custom-idea");
+
+    typeCards.forEach((card) => {
       card.addEventListener("click", () => {
-        candleCards.forEach((c) => c.classList.remove("selected"));
+        typeCards.forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
-        builderState.candleName = card.getAttribute("data-name");
-        builderState.candlePrice = Number(card.getAttribute("data-price")) || 25000;
+        builderState.typeName = card.getAttribute("data-name");
+        builderState.typeShort = card.getAttribute("data-short") || builderState.typeName;
+        builderState.typePrice = Number(card.getAttribute("data-price")) || 25000;
+
+        if (customIdeaWrap) {
+          customIdeaWrap.style.display = builderState.typeName.toLowerCase().includes("personalizada")
+            ? "block"
+            : "none";
+        }
         updateBuilderDisplay();
       });
     });
 
+    if (customIdeaInput) {
+      customIdeaInput.addEventListener("input", () => {
+        builderState.customIdea = customIdeaInput.value.trim();
+        updateBuilderDisplay();
+      });
+    }
+
+    // Paso 3: Tarjetas de Empaque
+    const boxCards = document.querySelectorAll("[data-builder-box]");
     boxCards.forEach((card) => {
       card.addEventListener("click", () => {
         boxCards.forEach((b) => b.classList.remove("selected"));
@@ -411,53 +641,201 @@
       });
     });
 
-    if (form) {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const recipient = document.getElementById("builder-recipient").value.trim();
-        const message = document.getElementById("builder-message").value.trim();
+    // Paso 4: Tarjeta Personalizada (Con tarjeta +$2.000 vs Sin tarjeta $0)
+    const cardChoices = document.querySelectorAll("[data-card-option]");
+    const cardFieldsWrap = document.getElementById("builder-card-fields-wrap");
+    const cardRecipientInput = document.getElementById("builder-card-recipient");
+    const cardMessageInput = document.getElementById("builder-card-message");
+    const cardCharCount = document.getElementById("builder-card-char-count");
+    const livePreviewText = document.getElementById("live-card-preview-text");
 
-        if (!message) {
-          showToast("Por favor escribe el mensaje especial para la tarjeta ✨", "error");
-          document.getElementById("builder-message").focus();
-          return;
+    cardChoices.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        cardChoices.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const opt = btn.getAttribute("data-card-option");
+        builderState.hasCard = opt === "yes";
+        builderState.cardPrice = builderState.hasCard ? 2000 : 0;
+        if (cardFieldsWrap) {
+          cardFieldsWrap.style.display = builderState.hasCard ? "grid" : "none";
         }
+        updateBuilderDisplay();
+      });
+    });
 
-        const total = builderState.candlePrice + builderState.boxPrice;
+    function updateLiveCardPreview() {
+      const rec = cardRecipientInput ? cardRecipientInput.value.trim() : "";
+      const msg = cardMessageInput ? cardMessageInput.value.trim() : "";
+      builderState.cardRecipient = rec;
+      builderState.cardMessage = msg;
+
+      if (cardCharCount && cardMessageInput) {
+        cardCharCount.textContent = `${cardMessageInput.value.length} / 120`;
+      }
+
+      if (livePreviewText) {
+        const displayRec = rec || "María";
+        const displayMsg = msg || "Feliz graduación, estamos orgullosos de ti";
+        livePreviewText.textContent = `"Para: ${displayRec} - ${displayMsg}"`;
+      }
+      updateBuilderDisplay();
+    }
+
+    if (cardRecipientInput) cardRecipientInput.addEventListener("input", updateLiveCardPreview);
+    if (cardMessageInput) cardMessageInput.addEventListener("input", updateLiveCardPreview);
+
+    function getCombinedColorText() {
+      if (builderState.secondaryColor) {
+        return `${builderState.primaryColor} + ${builderState.secondaryColor}`;
+      }
+      return builderState.primaryColor;
+    }
+
+    function getBuilderTotal() {
+      return builderState.typePrice + builderState.boxPrice + (builderState.hasCard ? builderState.cardPrice : 0);
+    }
+
+    function updateBuilderDisplay() {
+      const total = getBuilderTotal();
+      const combinedColors = getCombinedColorText();
+
+      // Mini resúmenes en cabeceras del acordeón
+      const s1 = document.getElementById("step1-summary-pill");
+      const s2 = document.getElementById("step2-summary-pill");
+      const s3 = document.getElementById("step3-summary-pill");
+      const s4 = document.getElementById("step4-summary-pill");
+
+      if (s1) s1.textContent = `${builderState.typeName} — ${formatCOP(builderState.typePrice)}`;
+      if (s2) s2.textContent = `Elegiste: ${combinedColors}`;
+      if (s3) {
+        const boxCostLabel = builderState.boxPrice > 0 ? `+${formatCOP(builderState.boxPrice)}` : "Incluido $0";
+        s3.textContent = `${builderState.boxName} (${boxCostLabel})`;
+      }
+      if (s4) {
+        s4.textContent = builderState.hasCard
+          ? `Con tarjeta personalizada (+${formatCOP(builderState.cardPrice)})`
+          : "Sin tarjeta ($0)";
+      }
+
+      const colorBanner = document.getElementById("builder-chosen-color-banner");
+      if (colorBanner) {
+        colorBanner.innerHTML = `Elegiste: <strong>${escapeHTML(combinedColors)}</strong>`;
+      }
+
+      const breakdownEl = document.getElementById("builder-live-breakdown");
+      if (breakdownEl) {
+        const boxPriceStr = builderState.boxPrice > 0 ? `+${formatCOP(builderState.boxPrice)}` : "$0";
+        const cardStr = builderState.hasCard
+          ? `Con tarjeta (+${formatCOP(builderState.cardPrice)})`
+          : "Sin tarjeta ($0)";
+        breakdownEl.innerHTML =
+          `<strong>Tipo:</strong> ${escapeHTML(builderState.typeName)} (${formatCOP(builderState.typePrice)}) &nbsp;+&nbsp; ` +
+          `<strong>Color:</strong> ${escapeHTML(combinedColors)} &nbsp;+&nbsp; ` +
+          `<strong>Empaque:</strong> ${escapeHTML(builderState.boxName)} (${boxPriceStr}) &nbsp;+&nbsp; ` +
+          `<strong>Tarjeta:</strong> ${cardStr}`;
+      }
+
+      const totalEl = document.getElementById("builder-total-display");
+      if (totalEl) totalEl.textContent = formatCOP(total);
+    }
+
+    // Botón "+ Sumar al Carrito" desde el configurador
+    const addBuilderToCartBtn = document.getElementById("builder-add-cart-btn");
+    if (addBuilderToCartBtn) {
+      addBuilderToCartBtn.addEventListener("click", () => {
+        const total = getBuilderTotal();
+        const combinedColors = getCombinedColorText();
         const customProduct = {
           id: "custom_" + Date.now(),
-          nombre: `Detalle Personalizado DARVELÉ`,
+          nombre: builderState.typeName,
           precio: total,
           precioOferta: null,
           imagen: "https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=900&q=85"
         };
 
+        const cardNote = builderState.hasCard
+          ? `Tarjeta: Sí — Para: ${builderState.cardRecipient || "Por definir"} — Mensaje: "${builderState.cardMessage || "Por definir"}"`
+          : "Tarjeta: No";
+
         const details = [
-          `Figura: ${builderState.candleName}`,
-          `Empaque: ${builderState.boxName}`,
-          recipient ? `Nombre/Fecha: ${recipient}` : null,
-          `Tarjeta: "${message}"`
+          `Color: ${combinedColors}`,
+          `Empaque: ${builderState.boxName}${builderState.boxPrice > 0 ? ` (+${formatCOP(builderState.boxPrice)})` : ""}`,
+          builderState.customIdea ? `Idea: "${builderState.customIdea}"` : null,
+          cardNote
         ]
           .filter(Boolean)
           .join(" | ");
 
-        addToCart(customProduct, 1, details);
-        form.reset();
+        addToCart(customProduct, 1, details, combinedColors);
         openCartDrawer();
       });
     }
 
+    // Submit final: "Pedir este detalle por WhatsApp"
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const clientNameInput = document.getElementById("builder-client-name");
+      const clientCityInput = document.getElementById("builder-client-city");
+      const clientName = clientNameInput ? clientNameInput.value.trim() : "";
+      const clientCity = clientCityInput ? clientCityInput.value.trim() : "";
+
+      if (!clientName || !clientCity) {
+        goToBuilderStep(4);
+        showToast("Por favor escribe tu Nombre y Ciudad en el Paso 4 para enviarte por WhatsApp ✨", "error");
+        if (!clientName && clientNameInput) clientNameInput.focus();
+        else if (clientCityInput) clientCityInput.focus();
+        return;
+      }
+
+      const total = getBuilderTotal();
+      const combinedColors = getCombinedColorText();
+      const boxExtraLabel =
+        builderState.boxPrice > 0 ? ` (+${formatCOP(builderState.boxPrice)})` : " ($0)";
+
+      const cardLine = builderState.hasCard
+        ? `Sí - Para: ${builderState.cardRecipient || "Por confirmar"} - Mensaje: ${builderState.cardMessage || "Por confirmar"}`
+        : "No ($0)";
+
+      const ideaLine = builderState.customIdea ? `\n- Idea personalizada: ${builderState.customIdea}` : "";
+
+      const rawMessage =
+        `Hola DARVELÉ ✨ Quiero armar mi detalle:\n` +
+        `- Tipo: ${builderState.typeShort}${ideaLine}\n` +
+        `- Color: ${combinedColors}\n` +
+        `- Empaque: ${builderState.boxName}${boxExtraLabel}\n` +
+        `- Tarjeta: ${cardLine}\n` +
+        `Total: ${formatCOP(total)}\n` +
+        `Nombre: ${clientName}\n` +
+        `Ciudad: ${clientCity}`;
+
+      const waUrl = `https://wa.me/${CONFIG_WHATSAPP}?text=${encodeURIComponent(rawMessage)}`;
+      showToast("Abriendo WhatsApp con tu detalle configurado... 💛");
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+    });
+
+    renderBuilderColorSwatches();
     updateBuilderDisplay();
   }
 
   /* --------------------------------------------------------------------------
-     CARRITO Y CHECKOUT A WHATSAPP
+     CARRITO Y CHECKOUT A WHATSAPP (CON COLOR SELECCIONADO Y VALIDACIÓN)
      -------------------------------------------------------------------------- */
   function loadCartFromStorage() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_CART);
-      cart = saved ? JSON.parse(saved) : [];
-      if (!Array.isArray(cart)) cart = [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      if (!Array.isArray(parsed)) {
+        cart = [];
+        return;
+      }
+      // Filtrar defensivamente precios <= 0 o cantidades <= 0
+      cart = parsed
+        .filter((item) => item && typeof item === "object" && Number(item.precio) > 0 && Number(item.cantidad) > 0)
+        .map((item) => ({
+          ...item,
+          precio: Math.max(1000, Number(item.precio) || 18000),
+          cantidad: Math.min(500, Math.max(1, Math.floor(Number(item.cantidad) || 1)))
+        }));
     } catch (e) {
       cart = [];
     }
@@ -471,38 +849,55 @@
     }
   }
 
-  function addToCart(product, quantity, customNote) {
+  function addToCart(product, quantity, customNote, selectedColor) {
+    const safeQty = Math.min(500, Math.max(1, Math.floor(Number(quantity) || 1)));
     const hasOffer = product.precioOferta && Number(product.precioOferta) < Number(product.precio);
-    const unitPrice = hasOffer ? Number(product.precioOferta) : Number(product.precio);
-    const cartKey = `${product.id}__${customNote || ""}`;
+    const rawUnitPrice = hasOffer ? Number(product.precioOferta) : Number(product.precio);
+    if (!rawUnitPrice || rawUnitPrice <= 0) {
+      showToast("Este producto no tiene un precio válido para agregar al carrito", "error");
+      return;
+    }
+
+    const colorStr = selectedColor ? String(selectedColor).trim() : "";
+    const noteStr = customNote ? String(customNote).trim() : "";
+    const cartKey = `${product.id}__${colorStr}__${noteStr}`;
+
+    const displayName =
+      colorStr && !product.nombre.includes("Color:")
+        ? `${product.nombre} - Color: ${colorStr}`
+        : product.nombre;
 
     const existing = cart.find((item) => item.cartKey === cartKey);
     if (existing) {
-      existing.cantidad += quantity;
+      existing.cantidad = Math.min(500, existing.cantidad + safeQty);
     } else {
       cart.push({
         cartKey,
         id: product.id,
-        nombre: product.nombre,
-        precio: unitPrice,
+        nombreBase: product.nombre,
+        nombre: displayName,
+        color: colorStr,
+        precio: rawUnitPrice,
         imagen: product.imagen,
-        cantidad: quantity,
-        personalizacion: customNote || ""
+        cantidad: safeQty,
+        personalizacion: noteStr
       });
     }
 
     saveCartToStorage();
     updateCartUI();
-    showToast(`¡${product.nombre} se sumó a tu carrito!`);
+    showToast(`¡${displayName} se sumó a tu carrito!`);
   }
 
   function updateCartItemQty(cartKey, delta) {
     const idx = cart.findIndex((item) => item.cartKey === cartKey);
     if (idx === -1) return;
 
-    cart[idx].cantidad += delta;
-    if (cart[idx].cantidad <= 0) {
+    const nextQty = cart[idx].cantidad + (Number(delta) || 0);
+    if (nextQty <= 0) {
       cart.splice(idx, 1);
+    } else {
+      cart[idx].cantidad = Math.min(500, nextQty);
     }
     saveCartToStorage();
     updateCartUI();
@@ -516,8 +911,12 @@
   }
 
   function getCartTotals() {
-    const subtotal = cart.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
-    const totalCount = cart.reduce((acc, item) => acc + item.cantidad, 0);
+    const subtotal = cart.reduce((acc, item) => {
+      const price = Math.max(0, Number(item.precio) || 0);
+      const qty = Math.max(1, Math.floor(Number(item.cantidad) || 1));
+      return acc + price * qty;
+    }, 0);
+    const totalCount = cart.reduce((acc, item) => acc + Math.max(1, Math.floor(Number(item.cantidad) || 1)), 0);
     const shipping = subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
     const total = subtotal + shipping;
     return { subtotal, totalCount, shipping, total };
@@ -526,13 +925,11 @@
   function updateCartUI() {
     const { subtotal, totalCount, shipping, total } = getCartTotals();
 
-    // Header badge & total
     const countBadge = document.getElementById("header-cart-count");
     const headerTotal = document.getElementById("header-cart-total");
     if (countBadge) countBadge.textContent = totalCount;
     if (headerTotal) headerTotal.textContent = formatCOP(subtotal);
 
-    // Banner envío gratis
     const shippingBanner = document.getElementById("cart-shipping-banner");
     if (shippingBanner) {
       if (subtotal === 0) {
@@ -545,7 +942,6 @@
       }
     }
 
-    // Lista de items
     const itemsContainer = document.getElementById("cart-items-list");
     const checkoutWrapper = document.getElementById("cart-checkout-section");
 
@@ -555,7 +951,7 @@
       itemsContainer.innerHTML = `
         <div style="text-align:center; padding:3rem 1rem;">
           <p class="serif" style="font-size:1.3rem; margin-bottom:0.5rem;">Tu carrito aún está vacío 🕯️</p>
-          <p style="font-size:0.9rem; color:var(--text-dark-muted); margin-bottom:1.5rem;">Elige una vela decorativa en figura o arma tu detalle personalizado para sorprender a alguien especial.</p>
+          <p style="font-size:0.9rem; color:var(--text-dark-muted); margin-bottom:1.5rem;">Elige una vela decorativa en figura o arma tu detalle personalizado en 4 pasos.</p>
         </div>
       `;
       if (checkoutWrapper) checkoutWrapper.style.display = "none";
@@ -595,7 +991,6 @@
       });
     }
 
-    // Totales en footer del drawer
     const subEl = document.getElementById("cart-subtotal-val");
     const shipEl = document.getElementById("cart-shipping-val");
     const totEl = document.getElementById("cart-total-val");
@@ -700,8 +1095,13 @@
 
       const itemsLines = cart
         .map((item) => {
-          const customSuffix = item.personalizacion ? ` (${item.personalizacion})` : "";
-          return `- ${item.cantidad}x ${item.nombre}${customSuffix} - ${formatCOP(item.precio * item.cantidad)}`;
+          const baseName = item.nombreBase || item.nombre.replace(/\s*-\s*Color:.*$/, "");
+          const detailsPart = item.personalizacion
+            ? ` (${item.personalizacion})`
+            : item.color
+            ? ` (Color: ${item.color})`
+            : "";
+          return `- ${item.cantidad}x ${baseName}${detailsPart} - ${formatCOP(item.precio * item.cantidad)}`;
         })
         .join("\n");
 

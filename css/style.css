@@ -831,7 +831,111 @@ button {
   display: flex;
   align-items: baseline;
   gap: 0.65rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+/* --- SELECTOR DE COLORES EN TARJETA Y MODAL DE PRODUCTO --- */
+.product-colors-wrap {
+  margin-bottom: 1.1rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed rgba(217, 185, 138, 0.4);
+}
+
+.product-colors-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dark-muted);
+  margin-bottom: 0.45rem;
+}
+
+.product-colors-label strong {
+  color: var(--bg-dark);
+  font-weight: 700;
+}
+
+.product-color-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+
+.color-dot-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(26, 26, 26, 0.2);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.color-dot-btn:hover {
+  transform: scale(1.14);
+}
+
+.color-dot-btn.selected {
+  border: 2.5px solid var(--gold);
+  box-shadow: 0 0 0 2px var(--bg-dark), 0 4px 10px rgba(217, 185, 138, 0.55);
+  transform: scale(1.15);
+}
+
+.modal-colors-section {
+  margin-bottom: 1.15rem;
+  padding: 0.85rem 1rem;
+  background: #FAF6F0;
+  border-radius: 12px;
+  border: 1px solid var(--border-gold);
+}
+
+.modal-colors-section .color-dot-btn {
+  width: 30px;
+  height: 30px;
+}
+
+/* --- SELECTOR MÚLTIPLE DE 15 COLORES EN ADMIN --- */
+.admin-colors-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-color-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-light);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  transition: var(--transition);
+  user-select: none;
+}
+
+.admin-color-chip input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--bg-dark);
+  flex-shrink: 0;
+}
+
+.admin-color-chip.checked {
+  border-color: var(--gold-dark);
+  background: rgba(217, 185, 138, 0.2);
+  font-weight: 700;
+}
+
+.admin-color-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(26, 26, 26, 0.25);
+  flex-shrink: 0;
 }
 
 .price-current {
@@ -1115,7 +1219,7 @@ button {
   border: none;
 }
 
-/* --- 7. SECCIÓN "ARMA TU DETALLE" --- */
+/* --- 7. SECCIÓN "ARMA TU DETALLE EN 4 PASOS 💛" (ACORDEÓN & CONFIGURADOR) --- */
 .builder-section {
   background: var(--bg-dark);
   color: var(--text-light);
@@ -1127,51 +1231,394 @@ button {
   background: var(--bg-dark-elevated);
   border: 1px solid var(--border-gold);
   border-radius: 22px;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem 1rem;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
 }
 
-.builder-steps-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-}
-
-.builder-step-card {
+.builder-progress-wrap {
+  margin-bottom: 1.5rem;
   background: var(--bg-dark-card);
-  border: 1px solid rgba(217, 185, 138, 0.18);
-  border-radius: var(--radius-card);
-  padding: 1.6rem;
+  padding: 1rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid rgba(217, 185, 138, 0.22);
 }
 
-.step-number-badge {
-  display: inline-flex;
+.builder-progress-header {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--gold);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.55rem;
+  font-size: 0.88rem;
 }
 
-.step-number-badge span {
-  width: 28px;
-  height: 28px;
+.builder-progress-header strong {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.builder-progress-header span {
+  color: var(--text-light-muted);
+  font-weight: 500;
+}
+
+.builder-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+}
+
+.builder-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+  border-radius: 10px;
+  transition: width 0.35s ease;
+}
+
+.builder-step-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.builder-step-tab {
+  padding: 0.45rem 0.3rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  transition: var(--transition);
+}
+
+.builder-step-tab.active {
+  background: rgba(217, 185, 138, 0.2);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.builder-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.builder-accordion-item {
+  background: var(--bg-dark-card);
+  border: 1px solid rgba(217, 185, 138, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.builder-accordion-item.open {
+  border-color: var(--gold);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.builder-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.15rem;
+  text-align: left;
+  color: var(--text-light);
+  background: rgba(255, 255, 255, 0.02);
+  gap: 0.75rem;
+}
+
+.step-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.step-badge-num {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--gold);
   color: var(--bg-dark);
+  font-weight: 700;
+  font-size: 0.92rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-header-left h3 {
+  font-size: 1.12rem;
+  color: var(--text-light);
+  margin-bottom: 0.15rem;
+}
+
+.step-mini-summary {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accordion-chevron {
+  color: var(--gold);
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.builder-accordion-item.open .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.builder-accordion-body {
+  display: none;
+  padding: 0 1.15rem 1.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 1.15rem;
+}
+
+.builder-accordion-item.open .builder-accordion-body {
+  display: block;
+}
+
+/* Paso 1: Grid de Tipos de Vela con Foto */
+.builder-type-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+}
+
+.builder-type-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.builder-type-card:hover {
+  border-color: rgba(217, 185, 138, 0.55);
+}
+
+.builder-type-card.selected {
+  border-color: var(--gold);
+  background: rgba(217, 185, 138, 0.14);
+}
+
+.builder-type-card img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.builder-type-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.builder-type-card-info strong {
+  display: block;
+  font-size: 0.96rem;
+  color: var(--text-light);
+  margin-bottom: 0.15rem;
+}
+
+.builder-type-card-info span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-light-muted);
+  margin-bottom: 0.35rem;
+}
+
+.builder-type-price {
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 0.92rem;
+}
+
+/* Paso 2: Selector de 15 Colores con Circulitos */
+.builder-colors-dual-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.builder-color-block-title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 0.65rem;
+}
+
+.builder-color-swatches-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.builder-swatch-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-light);
+  font-size: 0.78rem;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.builder-swatch-btn:hover {
+  border-color: rgba(217, 185, 138, 0.5);
+}
+
+.builder-swatch-btn.selected {
+  border-color: var(--gold);
+  background: rgba(217, 185, 138, 0.18);
+  box-shadow: 0 0 0 1px var(--gold);
   font-weight: 700;
 }
 
-.builder-step-card h3 {
-  font-size: 1.35rem;
-  margin-bottom: 1rem;
+.builder-swatch-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.btn-clear-sec-color {
+  font-size: 0.75rem;
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+}
+
+.builder-chosen-color-banner {
+  margin-top: 1.2rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(217, 185, 138, 0.12);
+  border: 1px solid var(--gold);
   color: var(--text-light);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.builder-chosen-color-banner strong {
+  color: var(--gold);
+}
+
+/* Paso 4: Tarjeta Personalizada & Vista Previa en Vivo */
+.builder-card-toggle-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.builder-card-choice {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-light);
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: var(--transition);
+}
+
+.builder-card-choice.active {
+  border-color: var(--gold);
+  background: rgba(217, 185, 138, 0.16);
+  color: var(--gold);
+}
+
+.builder-card-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.live-card-preview-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.live-card-preview-tag {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  margin-bottom: 0.45rem;
+}
+
+.live-card-paper {
+  background: var(--bg-light);
+  color: var(--text-dark);
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.35rem 1.2rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  position: relative;
+}
+
+.live-card-brand {
+  font-family: 'Cormorant Garamond', var(--font-serif);
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  color: var(--gold-dark);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.live-card-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text-dark);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.builder-client-quick-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.builder-step-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .builder-options-list {
@@ -1190,14 +1637,11 @@ button {
   border: 1.5px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   transition: var(--transition);
+  gap: 0.75rem;
 }
 
 .builder-radio-card:hover {
   border-color: rgba(217, 185, 138, 0.5);
-}
-
-.builder-radio-card input {
-  display: none;
 }
 
 .builder-radio-card.selected {
@@ -1220,6 +1664,7 @@ button {
   font-weight: 700;
   color: var(--gold);
   font-size: 0.92rem;
+  white-space: nowrap;
 }
 
 .builder-dark-input {
@@ -1229,7 +1674,8 @@ button {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(217, 185, 138, 0.3);
   color: var(--text-light);
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 16px;
 }
 
 .builder-dark-input::placeholder {
@@ -1240,15 +1686,50 @@ button {
   border-color: var(--gold);
 }
 
-.builder-summary-bar {
-  margin-top: 2rem;
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--border-gold);
+.builder-live-summary-box {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgba(217, 185, 138, 0.09);
+  border: 1.5px solid var(--gold);
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.builder-summary-eyebrow {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.builder-live-breakdown {
+  font-size: 0.92rem;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.builder-live-summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(217, 185, 138, 0.25);
+}
+
+.builder-final-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.builder-final-btns .btn {
+  width: 100%;
 }
 
 .builder-total-price strong {
@@ -1332,74 +1813,71 @@ button {
   color: var(--text-dark-muted);
 }
 
-/* --- 9. TESTIMONIOS --- */
-.testimonials-section {
+/* --- 9. SECCIÓN "¿CÓMO FUNCIONA TU PEDIDO?" --- */
+.how-it-works-section {
   background: var(--bg-light-alt);
 }
 
-.testimonials-grid {
+.how-steps-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.75rem;
 }
 
-.testimonial-card {
+.how-step-card {
   background: var(--bg-light-card);
-  padding: 2rem;
+  padding: 2.1rem 1.75rem;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-soft);
-  border: 1px solid rgba(217, 185, 138, 0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border: 1px solid rgba(217, 185, 138, 0.38);
+  text-align: center;
+  position: relative;
+  transition: var(--transition);
 }
 
-.testimonial-stars {
-  color: #D9A34A;
-  font-size: 1.05rem;
+.how-step-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--gold);
+}
+
+.how-step-num-badge {
+  display: inline-block;
+  padding: 0.28rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: rgba(217, 185, 138, 0.2);
+  color: var(--bg-dark);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   margin-bottom: 1rem;
-  letter-spacing: 2px;
 }
 
-.testimonial-quote {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.08rem;
-  color: var(--text-dark);
-  margin-bottom: 1.5rem;
-  line-height: 1.7;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  border-top: 1px solid var(--border-light);
-  padding-top: 1rem;
-}
-
-.author-avatar {
-  width: 44px;
-  height: 44px;
+.how-step-icon {
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   background: var(--bg-dark);
   color: var(--gold);
+  border: 1.5px solid var(--gold);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-serif);
-  font-weight: 700;
+  margin: 0 auto 1.25rem;
+  box-shadow: var(--shadow-gold);
 }
 
-.author-meta strong {
-  display: block;
-  font-size: 0.95rem;
+.how-step-card h3 {
+  font-size: 1.3rem;
+  color: var(--bg-dark);
+  margin-bottom: 0.75rem;
 }
 
-.author-meta span {
-  font-size: 0.8rem;
-  color: var(--terracotta);
-  font-weight: 600;
+.how-step-card p {
+  font-size: 0.94rem;
+  color: var(--text-dark-muted);
+  line-height: 1.65;
 }
 
 /* --- 10. SECCIÓN INSTAGRAM --- */
@@ -2391,8 +2869,42 @@ body.drawer-open .whatsapp-float {
   .about-grid {
     grid-template-columns: 1.05fr 1fr;
   }
-  .testimonials-grid {
+  .how-steps-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  .builder-wrapper {
+    padding: 2.25rem 2rem;
+  }
+  .builder-type-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .builder-colors-dual-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .builder-card-toggle-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .builder-card-fields-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+  }
+  .builder-client-quick-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .builder-live-summary-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .builder-final-btns {
+    flex-direction: row;
+    width: auto;
+  }
+  .builder-final-btns .btn {
+    width: auto;
+  }
+  .admin-colors-picker-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .ig-grid {
     grid-template-columns: repeat(6, 1fr);
