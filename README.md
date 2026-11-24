@@ -59,7 +59,7 @@ El número de WhatsApp está centralizado en la constante `CONFIG_WHATSAPP` dent
 
 ## 🔐 3. Cómo cambiar la contraseña del Panel de Administración
 
-La contraseña por defecto para entrar a `admin.html` es: **`darvele2026`**
+La contraseña por defecto para entrar a `admin.html` es: **`Dariana2026`**
 
 Para cambiarla:
 1. Abre [`js/admin.js`](./js/admin.js).

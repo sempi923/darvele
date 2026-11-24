@@ -7,10 +7,10 @@
  */
 
 /**
- * Hash SHA-256 de la contraseña maestra ("Darvele2026*Segura")
+ * Hash SHA-256 de la contraseña maestra ("Dariana2026")
  * No se almacena en texto plano en el código fuente.
  */
-const CONFIG_ADMIN_PASSWORD_HASH = "fbe6bf4718448aa8e9b9609af78efe7df6c917b5e73d080ba8a7f3264641867a";
+const CONFIG_ADMIN_PASSWORD_HASH = "346d148ff46fb074cdad88029ba1993681f847e9b76fc0068fa2aa1c47982e11";
 const SESSION_AUTH_KEY = "darvele_admin_session";
 const LOCKOUT_STORAGE_KEY = "darvele_admin_lockout";
 const MAX_LOGIN_ATTEMPTS = 5;
